@@ -4,6 +4,8 @@
 import pygame as pg
 import random
 from settings import *
+from tilemap import *
+from os import path
 from sprites import *
 
 # created a game class to instantiate later
@@ -23,26 +25,44 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
 
+    def load_data(self):
+        self.game_folder = path.dirname(__file__)
+        self.map = Map(path.join(self.game_folder, 'level1.txt'))
     # this defines a new game instance of itself everytime it runs
     def new(self):
+        self.load_data()
         # adds all sprites or characters into a group, which helps instantiate, update, and render all characters at once, rather than individually
         self.all_sprites = pg.sprite.Group()
+        self.all_walls = pg.sprite.Group()
+        self.all_mobs = pg.sprite.Group()
+        self.all_powerups = pg.sprite.Group()
         # creates a new player instance sprite at 50, 50 
-        self.player = Player(self, 1, 1)
+        # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100
-        self.mob = Mob(self, 100, 100)
-        # creates a new wall instance sprite at 200, 200
-        self.wall = Wall(self, 200, 200)
+        # self.mob = Mob(self, 100, 100)
+        # # creates a new wall instance sprite at 200, 200
+        # self.wall = Wall(self, 200, 200)
         # ading all sprites into a group
-        self.all_sprites.add(self.player)
-        self.all_sprites.add(self.mob)
-        self.all_sprites.add(self.wall)
+        # self.all_sprites.add(self.player)
+        # self.all_sprites.add(self.mob)
+        # self.all_sprites.add(self.wall)
         # for loop runs 6 times, creating 6 walls
-        for i in range(6):
-            Wall(self, i*TILESIZE, i*TILESIZE)
-        # for loop runs 6 times, creating 6 mobs and random coordinates
-        for i in range(6):
-            Mob(self, i*random.randint(0, WIDTH), i*random.randint(0, HEIGHT))
+        # for i in range(6):
+        #     Wall(self, i*TILESIZE, i*TILESIZE)
+        # # for loop runs 6 times, creating 6 mobs and random coordinates
+        # for i in range(6):
+        #     Mob(self, i*random.randint(0, WIDTH), i*random.randint(0, HEIGHT))
+        
+        for row, tiles in enumerate(self.map.data):
+            for col, tile in enumerate(tiles):
+                if tile == "1":
+                    Wall(self, col, row)
+                if tile == "P":
+                    self.player = Player(self, col, row)
+                if tile == "M":
+                    Mob(self, col, row)
+                if tile == "U":
+                    Powerup(self, col, row)
             
     # while self.running keeps checking to see if the game is still running
     # if self.running is True, it will run events(), update(), and draw()
@@ -65,9 +85,18 @@ class Game:
     def update(self):
         self.all_sprites.update()
 
+    def draw_text(self, surface, text, size, color, x, y):
+        font_name = pg.font.match_font('arial')
+        font = pg.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        surface.blit(text_surface, text_rect)
     # draws the background sprites on the screen
     def draw(self):
         self.screen.fill(WHITE)
+        self.draw_text(self.screen, str(self.dt*1000), 24, BLACK, WIDTH / 24, HEIGHT / 24)
+        self.draw_text(self.screen, "This game is awesome", 24, BLACK, WIDTH / 2, HEIGHT / 24)
         self.all_sprites.draw(self.screen)
         pg.display.flip()
 
