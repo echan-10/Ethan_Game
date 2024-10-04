@@ -94,10 +94,10 @@ class Game:
         surface.blit(text_surface, text_rect)
     # draws the background sprites on the screen
     def draw(self):
-        self.screen.fill(WHITE)
-        self.draw_text(self.screen, str(self.dt*1000), 24, BLACK, WIDTH / 24, HEIGHT / 24)
-        self.draw_text(self.screen, "This game is awesome", 24, BLACK, WIDTH / 2, HEIGHT / 24)
+        self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
+        self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
+        self.draw_text(self.screen, "Level 1", 24, WHITE, WIDTH / 2, HEIGHT / 24)
         pg.display.flip()
 
     # checks file name and runs the game loop by running the new() and run() methods
