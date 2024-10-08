@@ -36,6 +36,7 @@ class Game:
         self.all_walls = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_powerups = pg.sprite.Group()
+        self.all_coins = pg.sprite.Group()
         # creates a new player instance sprite at 50, 50 
         # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100
@@ -63,6 +64,8 @@ class Game:
                     Mob(self, col, row)
                 if tile == "U":
                     Powerup(self, col, row)
+                if tile == "C":
+                    Coin(self, col, row)
             
     # while self.running keeps checking to see if the game is still running
     # if self.running is True, it will run events(), update(), and draw()
@@ -97,7 +100,8 @@ class Game:
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
         self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
-        self.draw_text(self.screen, "Level 1", 24, WHITE, WIDTH / 2, HEIGHT / 24)
+        self.draw_text(self.screen, "Level 1", 24, WHITE, WIDTH / 2, HEIGHT / 100)
+        self.draw_text(self.screen, "Coins Collected: " + str(self.player.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
         pg.display.flip()
 
     # checks file name and runs the game loop by running the new() and run() methods

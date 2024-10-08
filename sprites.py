@@ -4,6 +4,7 @@ import pygame as pg
 import random
 from pygame.sprite import Sprite
 from settings import *
+# from threading import Timer
 
 class Player(Sprite):
     def __init__(self, game, x, y):
@@ -19,16 +20,17 @@ class Player(Sprite):
         self.y = y * TILESIZE
         self.speed = 10
         self.vx, self.vy = 0, 0
+        self.coins = 0
     def get_keys(self):
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
-            self.vy -= self.speed
+            self.vy -= self.speed * SPEED_MULTIPLIER
         if keys[pg.K_a]:
-            self.vx -= self.speed      
+            self.vx -= self.speed * SPEED_MULTIPLIER     
         if keys[pg.K_s]:
-            self.vy += self.speed
+            self.vy += self.speed * SPEED_MULTIPLIER
         if keys[pg.K_d]:
-            self.vx += self.speed
+            self.vx += self.speed * SPEED_MULTIPLIER
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
@@ -48,17 +50,22 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
+
     def collide_with_stuff(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
-                pass
+                SPEED_MULTIPLIER = 2
+            if str(hits[0].__class__.__name__) == "Coin":
+                self.coins += 1
+
     def update(self):
         self.get_keys()
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
 
         self.collide_with_stuff(self.game.all_powerups, True)
+        self.collide_with_stuff(self.game.all_coins, True)
 
         self.rect.x = self.x
         self.collide_with_walls('x')
@@ -113,5 +120,15 @@ class Powerup(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
         self.image.fill(PINK)
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+class Coin(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_coins
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(YELLOW)
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
