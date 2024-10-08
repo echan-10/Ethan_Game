@@ -48,15 +48,23 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
+    def collide_with_stuff(self, group, kill):
+        hits = pg.sprite.spritecollide(self, group, kill)
+        if hits:
+            if str(hits[0].__class__.__name__) == "Powerup":
+                pass
     def update(self):
         self.get_keys()
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
 
-        self.collide_with_walls('x')
+        self.collide_with_stuff(self.game.all_powerups, True)
+
         self.rect.x = self.x
-        self.collide_with_walls('y')
+        self.collide_with_walls('x')
         self.rect.y = self.y
+        self.collide_with_walls('y')
+
 
 class Mob(Sprite):
     def __init__(self, game, x, y):
