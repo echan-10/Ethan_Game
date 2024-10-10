@@ -8,6 +8,18 @@ from tilemap import *
 from os import path
 from sprites import *
 
+'''
+Elevator Pitch: I want to create a game where a character must complete three levels to reach the top of the castle and defeat a final boss. There will be obstacles, disappearing walls that are randomly generated, enemies, and teleportation portals at the end of each level that will take to the player to the next level.
+
+GOALS: Complete all three levels
+RULES: Cannot move through walls, can only kill enemies when a specific powerup is collected, go through portals to go to next level.
+FEEDBACK: If you collide with an enemy before eating a powerup, you will die. Collect all coins for the portal to appear in the level.
+FREEDOM: Move around inside the game space, collect coins
+
+What sentence does your game make?
+
+When the player collides with an enemy, the enemy bounces off
+'''
 # created a game class to instantiate later
 # it will have all the necessary parts to run the game
 # the game class is created to organize the elements needed to create a game
