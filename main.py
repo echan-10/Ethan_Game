@@ -16,9 +16,6 @@ RULES: Cannot move through walls, can only kill enemies when a specific powerup 
 FEEDBACK: If you collide with an enemy before eating a powerup, you will die. Collect all coins for the portal to appear in the level.
 FREEDOM: Move around inside the game space, collect coins
 
-What sentence does your game make?
-
-When the player collides with an enemy, the enemy bounces off
 '''
 # created a game class to instantiate later
 # it will have all the necessary parts to run the game
@@ -27,6 +24,7 @@ class Game:
 
     # the game __init__ method intializes all the necessary components for the game, including video and sound
     def __init__(self):
+        self.game = Game
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -37,18 +35,20 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
 
-    def load_data(self):
+    def load_data(self, level):
         self.game_folder = path.dirname(__file__)
-        self.map = Map(path.join(self.game_folder, 'level1.txt'))
+        self.map = Map(path.join(self.game_folder, level))
+        print("it worked")
     # this defines a new game instance of itself everytime it runs
     def new(self):
-        self.load_data()
+        self.load_data("level1.txt")
         # adds all sprites or characters into a group, which helps instantiate, update, and render all characters at once, rather than individually
         self.all_sprites = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_powerups = pg.sprite.Group()
         self.all_coins = pg.sprite.Group()
+        self.all_portals = pg.sprite.Group()
         # creates a new player instance sprite at 50, 50 
         # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100
@@ -78,6 +78,8 @@ class Game:
                     Powerup(self, col, row)
                 if tile == "C":
                     Coin(self, col, row)
+                if tile == "O":
+                    Portal(self, col, row)
             
     # while self.running keeps checking to see if the game is still running
     # if self.running is True, it will run events(), update(), and draw()

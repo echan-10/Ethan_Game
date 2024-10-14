@@ -21,16 +21,17 @@ class Player(Sprite):
         self.speed = 10
         self.vx, self.vy = 0, 0
         self.coins = 0
+        self.speed_multiplier = 1
     def get_keys(self):
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
-            self.vy -= self.speed * SPEED_MULTIPLIER
+            self.vy -= self.speed * self.speed_multiplier
         if keys[pg.K_a]:
-            self.vx -= self.speed * SPEED_MULTIPLIER     
+            self.vx -= self.speed * self.speed_multiplier     
         if keys[pg.K_s]:
-            self.vy += self.speed * SPEED_MULTIPLIER
+            self.vy += self.speed * self.speed_multiplier
         if keys[pg.K_d]:
-            self.vx += self.speed * SPEED_MULTIPLIER
+            self.vx += self.speed * self.speed_multiplier
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
@@ -55,9 +56,15 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
-                SPEED_MULTIPLIER = 2
+                self.speed_multiplier += 0.5
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
+            if str(hits[0].__class__.__name__) == "Portal":
+                self.game.load_data("level2.txt")
+                print("hi")
+                # replace the print function to call a method that will load next level
+            
+
 
     def update(self):
         self.get_keys()
@@ -66,6 +73,7 @@ class Player(Sprite):
 
         self.collide_with_stuff(self.game.all_powerups, True)
         self.collide_with_stuff(self.game.all_coins, True)
+        self.collide_with_stuff(self.game.all_portals, True)
 
         self.rect.x = self.x
         self.collide_with_walls('x')
@@ -122,6 +130,7 @@ class Powerup(Sprite):
         self.image.fill(PINK)
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
 class Coin(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.all_coins
@@ -130,5 +139,16 @@ class Coin(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
         self.image.fill(YELLOW)
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+class Portal(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_portals
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(PURPLE)
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
