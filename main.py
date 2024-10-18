@@ -25,6 +25,7 @@ class Game:
     # the game __init__ method intializes all the necessary components for the game, including video and sound
     def __init__(self):
         self.game = Game
+        self.level = 1
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -34,14 +35,15 @@ class Game:
         # game clock which allows us to set the framerate
         self.clock = pg.time.Clock()
         self.running = True
+        self.load_data("level1.txt")
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
         self.map = Map(path.join(self.game_folder, level))
-        print("it worked")
+        print("Opened new level")
     # this defines a new game instance of itself everytime it runs
     def new(self):
-        self.load_data("level1.txt")
+        # self.load_data("level1.txt")
         # adds all sprites or characters into a group, which helps instantiate, update, and render all characters at once, rather than individually
         self.all_sprites = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
@@ -112,11 +114,17 @@ class Game:
     # draws the background sprites on the screen
     def draw(self):
         self.screen.fill(BLACK)
-        self.all_sprites.draw(self.screen)
-        self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
-        self.draw_text(self.screen, "Level 1", 24, WHITE, WIDTH / 2, HEIGHT / 100)
-        self.draw_text(self.screen, "Coins Collected: " + str(self.player.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
-        pg.display.flip()
+        if hasattr(self, 'player'):
+            self.all_sprites.draw(self.screen)
+            # might want to use if hasattr function to make sure all sprites are there
+            self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
+            self.draw_text(self.screen, "Level 1", 24, WHITE, WIDTH / 2, HEIGHT / 100)
+            self.draw_text(self.screen, "Coins Collected: " + str(self.player.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
+            pg.display.flip()
+        else:
+            print("YIKES")
+            self.running = False
+            # can use this code to give end screen if player dies
 
     # checks file name and runs the game loop by running the new() and run() methods
 if __name__ == "__main__":

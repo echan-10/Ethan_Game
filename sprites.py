@@ -22,6 +22,7 @@ class Player(Sprite):
         self.vx, self.vy = 0, 0
         self.coins = 0
         self.speed_multiplier = 1
+        # self.level = 1
     def get_keys(self):
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
@@ -60,8 +61,14 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
-                self.game.load_data("level2.txt")
-                print("hi")
+                # self.game.new()
+                print(self.game.level)
+                self.game.level += 1
+                textLevel = "level" + str(self.game.level) + ".txt"
+                self.game.load_data(textLevel)
+                self.game.new()
+                print(textLevel)
+
                 # replace the print function to call a method that will load next level
             
 
