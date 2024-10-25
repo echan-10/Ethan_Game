@@ -39,7 +39,9 @@ class Game:
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
+        self.img_folder = path.join(self.game_folder, 'images')
         self.map = Map(path.join(self.game_folder, level))
+        # self.player_img = pg.image.load(path.join(self.img_folder, "bell.png"))
         print("Opened new level")
     # this defines a new game instance of itself everytime it runs
     def new(self):
@@ -118,7 +120,7 @@ class Game:
             self.all_sprites.draw(self.screen)
             # might want to use if hasattr function to make sure all sprites are there
             self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
-            self.draw_text(self.screen, "Level 1", 24, WHITE, WIDTH / 2, HEIGHT / 100)
+            self.draw_text(self.screen, "Level " + str(self.level), 24, WHITE, WIDTH / 2, HEIGHT / 100)
             self.draw_text(self.screen, "Coins Collected: " + str(self.player.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
             pg.display.flip()
         else:

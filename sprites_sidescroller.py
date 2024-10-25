@@ -5,6 +5,7 @@ import random
 from pygame.sprite import Sprite
 from settings import *
 # from threading import Timer
+vec = pg.math.Vector2
 
 class Player(Sprite):
     def __init__(self, game, x, y):
@@ -16,62 +17,68 @@ class Player(Sprite):
         self.image.fill(RED)
         # self.rect.x = x
         # self.rect.y = y
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
-        self.max_speed = 500
-        self.speed = 10
-        self.vx, self.vy = 0, 0
+        # self.x = x * TILESIZE
+        # self.y = y * TILESIZE
+        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.vel = vec(0, 0)
+        self.acc = vec(0, 0)
+        self.speed = 1
+        self.jumping = False
+        self.jump_power = 15
+        # self.vx, self.vy = 0, 0
         self.coins = 0
-        self.speed_multiplier = 1
+
+
         # self.level = 1
     def get_keys(self):
         keys = pg.key.get_pressed()
-        if keys[pg.K_w]:
-            self.vy -= self.speed * self.speed_multiplier
+        # if keys[pg.K_w]:
+        #     self.vy -= self.speed
         if keys[pg.K_a]:
-            self.vx -= self.speed * self.speed_multiplier     
-        if keys[pg.K_s]:
-            self.vy += self.speed * self.speed_multiplier
+            self.vel.x -= self.speed    
+        # if keys[pg.K_s]:
+        #     self.vy += self.speed
         if keys[pg.K_d]:
-            self.vx += self.speed * self.speed_multiplier
-        
-        if abs(self.vx) > self.max_speed:
-            if self.vx > 0:
-                self.vx = self.max_speed
-            elif self.vx < 0:
-                self.vx = -self.max_speed
-        if abs(self.vy) > self.max_speed:
-            if self.vy > 0:
-                self.vy = self.max_speed
-            elif self.vy < 0:
-                self.vy = -self.max_speed
+            self.vel.x += self.speed
+        if keys[pg.K_SPACE]:
+            self.jump()
 
-
+    def jump(self):
+        print("I'm trying to jump")
+        print(self.vel.y)
+        self.rect.y += 2
+        # adjusts the y value to be 2 pixels lower to detect collision with platform to jump
+        hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+        self.rect.y -= 2
+        if hits and not self.jumping:
+            self.jumping = True
+            self.vel.y = -self.jump_power
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
-                if self.vx > 0:
-                    self.x = hits[0].rect.left - self.rect.width
-                if self.vx < 0:
-                    self.x = hits[0].rect.right
-                self.vx = 0
-                self.rect.x = self.x
+                if self.vel.x > 0:
+                    self.pos.x = hits[0].rect.left - self.rect.width
+                if self.vel.x < 0:
+                    self.pos.x = hits[0].rect.right
+                self.vel.x = 0
+                self.rect.x = self.pos.x
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
-                if self.vy > 0:
-                    self.y= hits[0].rect.top - self.rect.height
-                if self.vy < 0:
-                    self.y = hits[0].rect.bottom
-                self.vy = 0
-                self.rect.y = self.y
+                if self.vel.y > 0:
+                    self.pos.y= hits[0].rect.top - self.rect.height
+                    self.jumping = False
+                if self.vel.y < 0:
+                    self.pos.y = hits[0].rect.bottom
+                self.vel.y = 0
+                self.rect.y = self.pos.y
 
     def collide_with_stuff(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
-                self.speed_multiplier += 0.5
+                self.speed += 2
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
@@ -88,17 +95,25 @@ class Player(Sprite):
 
 
     def update(self):
+        self.acc = vec(0, GRAVITY)
         self.get_keys()
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
+        self.acc.x += self.vel.x * FRICTION
+        self.vel += self.acc
+
+        if abs(self.vel.x) < 0.1:
+            self.vel.x = 0
+
+        self.pos += self.vel + 0.5 * self.acc
+        # self.x += self.vx * self.game.dt
+        # self.y += self.vy * self.game.dt
 
         self.collide_with_stuff(self.game.all_powerups, True)
         self.collide_with_stuff(self.game.all_coins, True)
         self.collide_with_stuff(self.game.all_portals, True)
 
-        self.rect.x = self.x
+        self.rect.x = self.pos.x
         self.collide_with_walls('x')
-        self.rect.y = self.y
+        self.rect.y = self.pos.y
         self.collide_with_walls('y')
 
 
