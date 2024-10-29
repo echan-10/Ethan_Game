@@ -21,9 +21,8 @@ class Player(Sprite):
         self.max_speed = 500
         self.speed = 10
         self.vx, self.vy = 0, 0
-        self.coins = 0
         self.speed_multiplier = 1
-        # self.level = 1
+
     def get_keys(self):
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
@@ -71,9 +70,15 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
-                self.speed_multiplier += 0.5
+                powerupChoice = random.randint(0, 1)
+                if powerupChoice == 0:
+                    print("extra speed!")
+                    self.speed_multiplier += 0.5
+                if powerupChoice == 1:
+                    print("extra life!")
+                    self.game.lives += 1
             if str(hits[0].__class__.__name__) == "Coin":
-                self.coins += 1
+                self.game.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
                 # self.game.new()
                 print(self.game.level)
@@ -82,6 +87,8 @@ class Player(Sprite):
                 self.game.load_data(textLevel)
                 self.game.new()
                 print(textLevel)
+            if str(hits[0].__class__.__name__) == "Mob":
+                self.game.lives -= 1
 
                 # replace the print function to call a method that will load next level
             
@@ -95,6 +102,7 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_powerups, True)
         self.collide_with_stuff(self.game.all_coins, True)
         self.collide_with_stuff(self.game.all_portals, True)
+        self.collide_with_stuff(self.game.all_mobs, True)
 
         self.rect.x = self.x
         self.collide_with_walls('x')
@@ -105,7 +113,7 @@ class Player(Sprite):
 class Mob(Sprite):
     def __init__(self, game, x, y):
         self.game = game
-        self.groups = game.all_sprites
+        self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()

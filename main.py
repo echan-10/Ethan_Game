@@ -7,6 +7,7 @@ from settings import *
 from tilemap import *
 from os import path
 from sprites import *
+from sprites_sidescroller import Player as SideScrollerPlayer  # Import sidescroller player
 
 '''
 Elevator Pitch: I want to create a game where a character must complete three levels to reach the top of the castle and defeat a final boss. There will be obstacles, disappearing walls that are randomly generated, enemies, and teleportation portals at the end of each level that will take to the player to the next level.
@@ -25,7 +26,9 @@ class Game:
     # the game __init__ method intializes all the necessary components for the game, including video and sound
     def __init__(self):
         self.game = Game
+        self.coins = 0
         self.level = 1
+        self.lives = 2
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -75,7 +78,11 @@ class Game:
                 if tile == "1":
                     Wall(self, col, row)
                 if tile == "P":
-                    self.player = Player(self, col, row)
+                    if self.level == 2:
+                        self.player = SideScrollerPlayer(self, col, row)  # Sidescroller movement
+                    else:
+                        self.player = Player(self, col, row)  # Default top-down movement
+                    # self.player = Player(self, col, row)
                 if tile == "M":
                     Mob(self, col, row)
                 if tile == "U":
@@ -94,6 +101,9 @@ class Game:
             self.events()
             self.update()
             self.draw()
+            if self.lives == 0:
+                    # checks number of lives and sees if you have any more lives
+                    self.running = False
 
     def events(self):
         # constantly listens for an event, such as keystrokes
@@ -121,7 +131,8 @@ class Game:
             # might want to use if hasattr function to make sure all sprites are there
             self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
             self.draw_text(self.screen, "Level " + str(self.level), 24, WHITE, WIDTH / 2, HEIGHT / 100)
-            self.draw_text(self.screen, "Coins Collected: " + str(self.player.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
+            self.draw_text(self.screen, "Coins Collected: " + str(self.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
+            self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH / 24, HEIGHT / 15)
             pg.display.flip()
         else:
             print("YIKES")
