@@ -22,11 +22,12 @@ class Player(Sprite):
         self.pos = vec(x * TILESIZE, y * TILESIZE)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
-        self.speed = 1
+        self.speed = 1.5
         self.jumping = False
-        self.jump_power = 15
+        self.jump_power = 13
+        self.max_speed = 8
         # self.vx, self.vy = 0, 0
-        self.coins = 0
+        # self.coins = 0
 
 
         # self.level = 1
@@ -35,13 +36,21 @@ class Player(Sprite):
         # if keys[pg.K_w]:
         #     self.vy -= self.speed
         if keys[pg.K_a]:
-            self.vel.x -= self.speed    
+            self.vel.x -= self.speed  
+            print(self.vel.x)  
         # if keys[pg.K_s]:
         #     self.vy += self.speed
         if keys[pg.K_d]:
             self.vel.x += self.speed
         if keys[pg.K_SPACE]:
             self.jump()
+
+        if abs(self.vel.x) > self.max_speed:
+            if self.vel.x > 0:
+                self.vel.x = self.max_speed
+            elif self.vel.x < 0:
+                self.vel.x = -self.max_speed
+
 
     def jump(self):
         print("I'm trying to jump")
@@ -89,6 +98,8 @@ class Player(Sprite):
                 self.game.load_data(textLevel)
                 self.game.new()
                 print(textLevel)
+            if str(hits[0].__class__.__name__) == "Mob":
+                self.game.lives -= 1
 
                 # replace the print function to call a method that will load next level
             
@@ -110,11 +121,15 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_powerups, True)
         self.collide_with_stuff(self.game.all_coins, True)
         self.collide_with_stuff(self.game.all_portals, True)
+        self.collide_with_stuff(self.game.all_mobs, True)
 
         self.rect.x = self.pos.x
         self.collide_with_walls('x')
         self.rect.y = self.pos.y
         self.collide_with_walls('y')
+
+
+
 
 
 class Mob(Sprite):

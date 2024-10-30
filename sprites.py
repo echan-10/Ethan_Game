@@ -18,7 +18,7 @@ class Player(Sprite):
         # self.rect.y = y
         self.x = x * TILESIZE
         self.y = y * TILESIZE
-        self.max_speed = 500
+        self.max_speed = 400
         self.speed = 10
         self.vx, self.vy = 0, 0
         self.speed_multiplier = 1
@@ -28,7 +28,8 @@ class Player(Sprite):
         if keys[pg.K_w]:
             self.vy -= self.speed * self.speed_multiplier
         if keys[pg.K_a]:
-            self.vx -= self.speed * self.speed_multiplier     
+            self.vx -= self.speed * self.speed_multiplier   
+            print(self.vx)  
         if keys[pg.K_s]:
             self.vy += self.speed * self.speed_multiplier
         if keys[pg.K_d]:
@@ -70,11 +71,11 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
-                powerupChoice = random.randint(0, 1)
-                if powerupChoice == 0:
+                powerupChoice = random.randint(0, 100)
+                if powerupChoice > 30:
                     print("extra speed!")
                     self.speed_multiplier += 0.5
-                if powerupChoice == 1:
+                else:
                     print("extra life!")
                     self.game.lives += 1
             if str(hits[0].__class__.__name__) == "Coin":
