@@ -8,6 +8,7 @@ from tilemap import *
 from os import path
 from sprites import *
 from sprites_sidescroller import Player as SideScrollerPlayer  # Import sidescroller player
+from sprites_sidescroller import Projectile
 
 '''
 Elevator Pitch: I want to create a game where a character must complete three levels to reach the top of the castle and defeat a final boss. There will be obstacles, disappearing walls that are randomly generated, enemies, and teleportation portals at the end of each level that will take to the player to the next level.
@@ -56,6 +57,7 @@ class Game:
         self.all_powerups = pg.sprite.Group()
         self.all_coins = pg.sprite.Group()
         self.all_portals = pg.sprite.Group()
+        self.all_projectiles = pg.sprite.Group()
         # creates a new player instance sprite at 50, 50 
         # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100

@@ -4,6 +4,7 @@ import pygame as pg
 import random
 from pygame.sprite import Sprite
 from settings import *
+from utils import *
 # from threading import Timer
 vec = pg.math.Vector2
 
@@ -25,7 +26,8 @@ class Player(Sprite):
         self.speed = 1.5
         self.jumping = False
         self.jump_power = 13
-        self.max_speed = 8
+        self.max_speed = 10
+        self.cd = Cooldown()
         # self.vx, self.vy = 0, 0
         # self.coins = 0
 
@@ -42,6 +44,7 @@ class Player(Sprite):
         #     self.vy += self.speed
         if keys[pg.K_d]:
             self.vel.x += self.speed
+            print(self.vel.x)
         if keys[pg.K_SPACE]:
             self.jump()
 
@@ -50,6 +53,16 @@ class Player(Sprite):
                 self.vel.x = self.max_speed
             elif self.vel.x < 0:
                 self.vel.x = -self.max_speed
+        if pg.mouse.get_pressed()[0]:
+            print(pg.mouse.get_pos())
+            self.shoot()
+    
+    def shoot(self):
+        self.cd.event_time = floor(pg.time.get_ticks()/1000)
+        if self.cd.delta > 0.01:
+            p = Projectile(self.game, self.rect.x, self.rect.y)
+        else:
+            print("Weapon on cooldown")
 
 
     def jump(self):
@@ -106,6 +119,7 @@ class Player(Sprite):
 
 
     def update(self):
+        self.cd.ticking()
         self.acc = vec(0, GRAVITY)
         self.get_keys()
         self.acc.x += self.vel.x * FRICTION
@@ -203,3 +217,18 @@ class Portal(Sprite):
         self.image.fill(PURPLE)
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+class Projectile(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_projectiles
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(PINK)
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = 10
+
+    def update(self):
+        self.rect.y -= self.speed
