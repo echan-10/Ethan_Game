@@ -27,9 +27,8 @@ class Game:
     # the game __init__ method intializes all the necessary components for the game, including video and sound
     def __init__(self):
         self.game = Game
-        self.coins = 0
         self.level = 1
-        self.lives = 2
+        self.lives = 5
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -51,6 +50,9 @@ class Game:
     def new(self):
         # self.load_data("level1.txt")
         # adds all sprites or characters into a group, which helps instantiate, update, and render all characters at once, rather than individually
+        self.spawnPortal = False
+        self.coins = 0
+        self.ammo = 5
         self.all_sprites = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()

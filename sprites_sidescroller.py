@@ -59,8 +59,12 @@ class Player(Sprite):
     
     def shoot(self):
         self.cd.event_time = floor(pg.time.get_ticks()/1000)
-        if self.cd.delta > 0.01:
-            p = Projectile(self.game, self.rect.x, self.rect.y)
+        if self.cd.delta > 0.001:
+            if self.game.ammo > 0:
+                p = Projectile(self.game, self.rect.x, self.rect.y)
+                self.game.ammo -= 1
+            else:
+                print("NO AMMO")
         else:
             print("Weapon on cooldown")
 
@@ -100,7 +104,15 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
-                self.speed += 2
+                powerupChoice = random.randint(0, 100)
+                if powerupChoice > 60:
+                    print("extra speed!")
+                    self.speed_multiplier += 0.5
+                elif powerupChoice > 30 and powerupChoice <= 60:
+                    print("extra life!")
+                    self.game.lives += 1
+                else:
+                    self.game.ammo += 5
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
@@ -225,10 +237,15 @@ class Projectile(Sprite):
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
-        self.image.fill(PINK)
+        self.image.fill(ORANGE)
         self.rect.x = x
         self.rect.y = y
         self.speed = 10
 
     def update(self):
         self.rect.y -= self.speed
+        # Collision:
+        hits = pg.sprite.spritecollide(self, self.game.all_mobs, True)
+        if hits:
+            # Removes projectile if it hits a mob
+            self.kill()
