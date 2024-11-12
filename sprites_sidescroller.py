@@ -1,5 +1,5 @@
 # This file was created by Ethan Chan
-
+import math
 import pygame as pg
 import random
 from pygame.sprite import Sprite
@@ -18,9 +18,9 @@ class Player(Sprite):
         self.image.fill(RED)
         # self.rect.x = x
         # self.rect.y = y
-        # self.x = x * TILESIZE
-        # self.y = y * TILESIZE
-        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
+        self.pos = vec(self.x, self.y)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
         self.speed = 1.5
@@ -58,10 +58,15 @@ class Player(Sprite):
             self.shoot()
     
     def shoot(self):
+        mouse_x, mouse_y = pg.mouse.get_pos()
+        dx = mouse_x - self.x
+        dy = mouse_y - self.y
+        angle = math.atan2(dy, dx)
+
         self.cd.event_time = floor(pg.time.get_ticks()/1000)
         if self.cd.delta > 0.001:
             if self.game.ammo > 0:
-                p = Projectile(self.game, self.rect.x, self.rect.y)
+                p = Projectile(self.game, self.rect.centerx, self.rect.centery, angle)
                 self.game.ammo -= 1
             else:
                 print("NO AMMO")
@@ -107,7 +112,7 @@ class Player(Sprite):
                 powerupChoice = random.randint(0, 100)
                 if powerupChoice > 60:
                     print("extra speed!")
-                    self.speed_multiplier += 0.5
+                    self.max_speed += 2.5
                 elif powerupChoice > 30 and powerupChoice <= 60:
                     print("extra life!")
                     self.game.lives += 1
@@ -231,19 +236,21 @@ class Portal(Sprite):
         self.rect.y = y * TILESIZE
 
 class Projectile(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, angle):
         self.groups = game.all_sprites, game.all_projectiles
         self.game = game
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
         self.image.fill(ORANGE)
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.center = (x, y)
         self.speed = 10
+        self.vx = self.speed * math.cos(angle)
+        self.vy = self.speed * math.sin(angle)
 
     def update(self):
-        self.rect.y -= self.speed
+        self.rect.x += self.vx
+        self.rect.y += self.vy
         # Collision:
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, True)
         if hits:

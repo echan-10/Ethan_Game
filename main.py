@@ -27,6 +27,7 @@ class Game:
     # the game __init__ method intializes all the necessary components for the game, including video and sound
     def __init__(self):
         self.game = Game
+        # define variables that are not supposed to be reset every level here
         self.level = 1
         self.lives = 5
         pg.init()
@@ -50,6 +51,7 @@ class Game:
     def new(self):
         # self.load_data("level1.txt")
         # adds all sprites or characters into a group, which helps instantiate, update, and render all characters at once, rather than individually
+        # define variables here if you want it to reset after every level
         self.spawnPortal = False
         self.coins = 0
         self.ammo = 5
@@ -133,10 +135,11 @@ class Game:
         if hasattr(self, 'player'):
             self.all_sprites.draw(self.screen)
             # might want to use if hasattr function to make sure all sprites are there
-            self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH / 24, HEIGHT / 100)
+            self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH - 980, HEIGHT - 770)
             self.draw_text(self.screen, "Level " + str(self.level), 24, WHITE, WIDTH / 2, HEIGHT / 100)
-            self.draw_text(self.screen, "Coins Collected: " + str(self.coins) , 24, WHITE, WIDTH / 12, HEIGHT / 30)
-            self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH / 24, HEIGHT / 15)
+            self.draw_text(self.screen, "Coins Collected: " + str(self.coins) , 24, WHITE, WIDTH - 940, HEIGHT - 750)
+            self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH - 985, HEIGHT - 730)
+            self.draw_text(self.screen, "Ammo: " + str(self.ammo) , 24, WHITE, WIDTH - 980, HEIGHT - 710)
             pg.display.flip()
         else:
             print("YIKES")
