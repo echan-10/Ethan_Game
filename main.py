@@ -30,6 +30,8 @@ class Game:
         # define variables that are not supposed to be reset every level here
         self.level = 1
         self.lives = 5
+        self.speed_multiplier = 1
+        self.projectileSpeed = 1
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -39,7 +41,7 @@ class Game:
         # game clock which allows us to set the framerate
         self.clock = pg.time.Clock()
         self.running = True
-        self.load_data("level1.txt")
+        self.load_data("level3.txt")
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
@@ -62,6 +64,7 @@ class Game:
         self.all_coins = pg.sprite.Group()
         self.all_portals = pg.sprite.Group()
         self.all_projectiles = pg.sprite.Group()
+        self.all_bosses = pg.sprite.Group()
         # creates a new player instance sprite at 50, 50 
         # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100
@@ -97,6 +100,8 @@ class Game:
                     Coin(self, col, row)
                 if tile == "O":
                     Portal(self, col, row)
+                if tile == "B":
+                    Boss(self, col, row)
             
     # while self.running keeps checking to see if the game is still running
     # if self.running is True, it will run events(), update(), and draw()

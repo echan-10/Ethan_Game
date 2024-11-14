@@ -110,16 +110,18 @@ class Player(Sprite):
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
                 powerupChoice = random.randint(0, 100)
-                if powerupChoice > 60:
+                if powerupChoice <= 30:
                     print("extra speed!")
-                    self.max_speed += 2.5
+                    self.game.speed_multiplier += 0.5
                 elif powerupChoice > 30 and powerupChoice <= 60:
                     print("extra life!")
-                    self.game.lives += 1
-                else:
                     self.game.ammo += 5
+                elif powerupChoice > 60 and powerupChoice <= 90:
+                    self.game.projectileSpeed += 0.5
+                else:
+                    self.game.lives += 1
             if str(hits[0].__class__.__name__) == "Coin":
-                self.coins += 1
+                self.game.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
                 # self.game.new()
                 print(self.game.level)
@@ -249,8 +251,8 @@ class Projectile(Sprite):
         self.vy = self.speed * math.sin(angle)
 
     def update(self):
-        self.rect.x += self.vx
-        self.rect.y += self.vy
+        self.rect.x += self.vx * self.game.projectileSpeed
+        self.rect.y += self.vy * self.game.projectileSpeed
         # Collision:
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, True)
         if hits:

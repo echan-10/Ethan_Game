@@ -23,20 +23,19 @@ class Player(Sprite):
         self.max_speed = 400
         self.speed = 10
         self.vx, self.vy = 0, 0
-        self.speed_multiplier = 1
         self.cd = Cooldown()
 
     def get_keys(self):
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
-            self.vy -= self.speed * self.speed_multiplier
+            self.vy -= self.speed * self.game.speed_multiplier
         if keys[pg.K_a]:
-            self.vx -= self.speed * self.speed_multiplier   
+            self.vx -= self.speed * self.game.speed_multiplier   
             print(self.vx)  
         if keys[pg.K_s]:
-            self.vy += self.speed * self.speed_multiplier
+            self.vy += self.speed * self.game.speed_multiplier
         if keys[pg.K_d]:
-            self.vx += self.speed * self.speed_multiplier
+            self.vx += self.speed * self.game.speed_multiplier
         
         if abs(self.vx) > self.max_speed:
             if self.vx > 0:
@@ -95,14 +94,16 @@ class Player(Sprite):
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
                 powerupChoice = random.randint(0, 100)
-                if powerupChoice > 60:
+                if powerupChoice <= 30:
                     print("extra speed!")
-                    self.speed_multiplier += 0.5
+                    self.game.speed_multiplier += 0.5
                 elif powerupChoice > 30 and powerupChoice <= 60:
                     print("extra life!")
-                    self.game.lives += 1
-                else:
                     self.game.ammo += 5
+                elif powerupChoice > 60 and powerupChoice <= 90:
+                    self.game.projectileSpeed += 0.5
+                else:
+                    self.game.lives += 1
             if str(hits[0].__class__.__name__) == "Coin":
                 self.game.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
@@ -114,6 +115,8 @@ class Player(Sprite):
                 self.game.new()
                 print(textLevel)
             if str(hits[0].__class__.__name__) == "Mob":
+                self.game.lives -= 1
+            if str(hits[0].__class__.__name__) == "Projectile":
                 self.game.lives -= 1
 
                 # replace the print function to call a method that will load next level
@@ -130,6 +133,7 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_coins, True)
         self.collide_with_stuff(self.game.all_portals, True)
         self.collide_with_stuff(self.game.all_mobs, True)
+        self.collide_with_stuff(self.game.all_projectiles, True)
         # self.collide_with_stuff(self.game.all_projectiles, True)
 
         self.rect.x = self.x
@@ -234,11 +238,40 @@ class Projectile(Sprite):
         self.vy = self.speed * math.sin(angle)
 
     def update(self):
-        self.rect.x += self.vx
-        self.rect.y += self.vy
+        self.rect.x += self.vx * self.game.projectileSpeed
+        self.rect.y += self.vy * self.game.projectileSpeed
 
         # Collision:
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, True)
         if hits:
             # Removes projectile if it hits a mob
             self.kill()
+
+class Boss(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_bosses
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(PINK)
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        self.shootTimer = 0
+        self.shootCountdown = 5000
+    def shoot(self):
+        # gets all the angles in pi radians for every 15 degrees (15 * 24 iterations = 360 degrees)
+        angles = [i * math.pi / 12 for i in range(24)]
+        for angle in angles:
+            # creates 24 projectile sprites all offset by 15 degrees
+            p = Projectile(self.game, self.rect.centerx, self.rect.centery, angle)
+            print(angle)
+            # self.game.all_projectiles.add(p)
+    def update(self):
+        # gets current time
+        current_time = pg.time.get_ticks()
+        # finds time difference between every shot and checks to see if 5 seconds have passed
+        if current_time - self.shootTimer >= self.shootCountdown:
+            self.shoot()
+            # reset the timer to the current time (or 5 seconds), so the boss doesn't rapid fire within the 5 seconds
+            self.shootTimer = current_time
