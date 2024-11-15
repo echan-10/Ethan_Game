@@ -59,8 +59,12 @@ class Player(Sprite):
 
         self.cd.event_time = floor(pg.time.get_ticks()/1000)
         if self.cd.delta > 0.001:
-            if self.game.ammo > 0:
-                p = Projectile(self.game, self.rect.centerx, self.rect.centery, angle)
+            if self.game.special_ammo > 0:
+                p = ShootSpecialProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
+                self.game.special_ammo -= 1
+            elif self.game.ammo > 0:
+                p = PlayerProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
+                print("you shot!")
                 self.game.ammo -= 1
             else:
                 print("NO AMMO")
@@ -81,6 +85,27 @@ class Player(Sprite):
                 self.rect.x = self.x
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+            if hits:
+                if self.vy > 0:
+                    self.y = hits[0].rect.top - self.rect.height
+                if self.vy < 0:
+                    self.y = hits[0].rect.bottom
+                self.vy = 0
+                self.rect.y = self.y
+
+
+    def collide_with_invisiblewalls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
+            if hits:
+                if self.vx > 0:
+                    self.x = hits[0].rect.left - self.rect.width
+                if self.vx < 0:
+                    self.x = hits[0].rect.right
+                self.vx = 0
+                self.rect.x = self.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
             if hits:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.height
@@ -116,8 +141,11 @@ class Player(Sprite):
                 print(textLevel)
             if str(hits[0].__class__.__name__) == "Mob":
                 self.game.lives -= 1
-            if str(hits[0].__class__.__name__) == "Projectile":
+            if str(hits[0].__class__.__name__) == "BossProjectile":
                 self.game.lives -= 1
+            if str(hits[0].__class__.__name__) == "SpecialProjectile":
+                self.game.special_ammo += 1
+                print(self.game.special_ammo)
 
                 # replace the print function to call a method that will load next level
             
@@ -133,13 +161,21 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_coins, True)
         self.collide_with_stuff(self.game.all_portals, True)
         self.collide_with_stuff(self.game.all_mobs, True)
-        self.collide_with_stuff(self.game.all_projectiles, True)
-        # self.collide_with_stuff(self.game.all_projectiles, True)
+        self.collide_with_stuff(self.game.all_bossprojectiles, True)
+        self.collide_with_stuff(self.game.all_specialprojectiles, True)
 
         self.rect.x = self.x
         self.collide_with_walls('x')
+        self.collide_with_invisiblewalls('x')
         self.rect.y = self.y
         self.collide_with_walls('y')
+        self.collide_with_invisiblewalls('y')
+
+        # self.rect.x = self.x
+        # self.collide_with_invisiblewalls('x')
+        # self.rect.y = self.y
+        # self.collide_with_invisiblewalls('y')
+
 
 
 class Mob(Sprite):
@@ -175,6 +211,19 @@ class Wall(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
         self.image.fill(BLUE)
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+    def update(self):
+        pass
+
+class InvisibleWall(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_invisiblewalls
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(TRANSPARENT)
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
     def update(self):
@@ -224,9 +273,9 @@ class Portal(Sprite):
         else:
             self.rect.x = self.x_original + (100 * TILESIZE)
 
-class Projectile(Sprite):
+class PlayerProjectile(Sprite):
     def __init__(self, game, x, y, angle):
-        self.groups = game.all_sprites, game.all_projectiles
+        self.groups = game.all_sprites, game.all_playerprojectiles
         self.game = game
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE, TILESIZE))
@@ -236,16 +285,25 @@ class Projectile(Sprite):
         self.speed = 10
         self.vx = self.speed * math.cos(angle)
         self.vy = self.speed * math.sin(angle)
-
+    def collide_with_stuff(self, group, kill):
+        hits = pg.sprite.spritecollide(self, group, kill)
+        if hits:
+            if str(hits[0].__class__.__name__) == "BossProjectile":
+                print("I hit a bullet")
+                self.kill()
+            if str(hits[0].__class__.__name__) == "Mob":
+                print("I hit a mob")
+                self.kill()
+            # Add more to this later for special bullets
     def update(self):
         self.rect.x += self.vx * self.game.projectileSpeed
         self.rect.y += self.vy * self.game.projectileSpeed
-
+        if (self.rect.x < 0 or self.rect.x > WIDTH or
+            self.rect.y < 0 or self.rect.y > HEIGHT):
+            self.kill() 
         # Collision:
-        hits = pg.sprite.spritecollide(self, self.game.all_mobs, True)
-        if hits:
-            # Removes projectile if it hits a mob
-            self.kill()
+        self.collide_with_stuff(self.game.all_mobs, True)
+        self.collide_with_stuff(self.game.all_bossprojectiles, True)
 
 class Boss(Sprite):
     def __init__(self, game, x, y):
@@ -264,7 +322,7 @@ class Boss(Sprite):
         angles = [i * math.pi / 12 for i in range(24)]
         for angle in angles:
             # creates 24 projectile sprites all offset by 15 degrees
-            p = Projectile(self.game, self.rect.centerx, self.rect.centery, angle)
+            p = BossProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
             print(angle)
             # self.game.all_projectiles.add(p)
     def update(self):
@@ -275,3 +333,83 @@ class Boss(Sprite):
             self.shoot()
             # reset the timer to the current time (or 5 seconds), so the boss doesn't rapid fire within the 5 seconds
             self.shootTimer = current_time
+        if self.game.boss_lives == 0:
+            self.kill()
+class BossProjectile(Sprite):
+    def __init__(self, game, x, y, angle):
+        self.groups = game.all_sprites, game.all_bossprojectiles
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(ORANGE)
+        self.rect.center = (x, y)
+        self.speed = 10
+        self.vx = self.speed * math.cos(angle)
+        self.vy = self.speed * math.sin(angle)
+    def collide_with_stuff(self, group, kill):
+        hits = pg.sprite.spritecollide(self, group, kill)
+        if hits:
+            if str(hits[0].__class__.__name__) == "Wall":
+                print("I hit a wall")
+                self.kill()
+            if str(hits[0].__class__.__name__) == "ShootSpecialProjectile":
+                self.kill()
+    def update(self):
+        self.rect.x += self.vx
+        self.rect.y += self.vy
+        self.collide_with_stuff(self.game.all_walls, True)
+
+class SpecialProjectile(Sprite):
+    def __init__(self, game):
+        self.groups = game.all_sprites, game.all_specialprojectiles
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(SKYBLUE)
+        self.position = random.choice([(5, 5), (10, 10), (15, 15), (20, 20)])
+        self.rect.x = self.position[0] * TILESIZE
+        self.rect.y = self.position[1] * TILESIZE
+        self.visible = True
+        self.collected = False
+    def update(self):
+        if pg.sprite.collide_rect(self, self.game.player):
+            self.collected = True
+            self.kill()
+
+class ShootSpecialProjectile(Sprite):
+    def __init__(self, game, x, y, angle):
+        self.groups = game.all_sprites, game.all_shootspecialprojectiles
+        self.game = game
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.rect = self.image.get_rect()
+        self.image.fill(SKYBLUE)
+        self.rect.center = (x, y)
+        self.speed = 10
+        self.vx = self.speed * math.cos(angle)
+        self.vy = self.speed * math.sin(angle)
+    def collide_with_stuff(self, group, kill):
+        hits = pg.sprite.spritecollide(self, group, kill)
+        if hits:
+            if str(hits[0].__class__.__name__) == "Boss":
+                print("I hit a boss")
+                self.game.boss_lives -= 1
+            if str(hits[0].__class__.__name__) == "BossProjectile":
+                print("I hit a boss projectile")
+            if str(hits[0].__class__.__name__) == "Mob":
+                print("I hit a mob")
+            if str(hits[0].__class__.__name__) == "Wall":
+                print("I hit a wall")
+    def update(self):
+        self.rect.x += self.vx * (self.game.projectileSpeed + 3)
+        self.rect.y += self.vy * (self.game.projectileSpeed + 3)
+        if (self.rect.x < 0 or self.rect.x > WIDTH or
+            self.rect.y < 0 or self.rect.y > HEIGHT):
+            self.kill() 
+        # Collision:
+        self.collide_with_stuff(self.game.all_bosses, False)
+        self.collide_with_stuff(self.game.all_bossprojectiles, True)
+        self.collide_with_stuff(self.game.all_mobs, True)
+        self.collide_with_stuff(self.game.all_walls, True)

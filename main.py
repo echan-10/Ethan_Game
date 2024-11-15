@@ -28,10 +28,12 @@ class Game:
     def __init__(self):
         self.game = Game
         # define variables that are not supposed to be reset every level here
-        self.level = 1
+        self.level = 1 # CHANGE THIS LATER
         self.lives = 5
+        self.boss_lives = 2
         self.speed_multiplier = 1
         self.projectileSpeed = 1
+        self.special_ammo = 0
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -41,7 +43,7 @@ class Game:
         # game clock which allows us to set the framerate
         self.clock = pg.time.Clock()
         self.running = True
-        self.load_data("level3.txt")
+        self.load_data("level1.txt") # CHANGE THIS LATER
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
@@ -64,7 +66,12 @@ class Game:
         self.all_coins = pg.sprite.Group()
         self.all_portals = pg.sprite.Group()
         self.all_projectiles = pg.sprite.Group()
+        self.all_playerprojectiles = pg.sprite.Group()
+        self.all_bossprojectiles = pg.sprite.Group()
         self.all_bosses = pg.sprite.Group()
+        self.all_invisiblewalls = pg.sprite.Group()
+        self.all_specialprojectiles = pg.sprite.Group()
+        self.all_shootspecialprojectiles = pg.sprite.Group()
         # creates a new player instance sprite at 50, 50 
         # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100
@@ -102,10 +109,15 @@ class Game:
                     Portal(self, col, row)
                 if tile == "B":
                     Boss(self, col, row)
+                if tile == "I":
+                    InvisibleWall(self, col, row)
+                if self.level == 3:
+                    SpecialProjectile(self)
             
     # while self.running keeps checking to see if the game is still running
     # if self.running is True, it will run events(), update(), and draw()
     # if self.running is False, it will not run these events and close the game under the events() function
+    
     def run(self):
         while self.running:
             self.dt = self.clock.tick(FPS) / 1000
