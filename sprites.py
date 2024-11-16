@@ -31,7 +31,6 @@ class Player(Sprite):
             self.vy -= self.speed * self.game.speed_multiplier
         if keys[pg.K_a]:
             self.vx -= self.speed * self.game.speed_multiplier   
-            print(self.vx)  
         if keys[pg.K_s]:
             self.vy += self.speed * self.game.speed_multiplier
         if keys[pg.K_d]:
@@ -48,7 +47,6 @@ class Player(Sprite):
             elif self.vy < 0:
                 self.vy = -self.max_speed
         if pg.mouse.get_pressed()[0]:
-            print(pg.mouse.get_pos())
             self.shoot()
 
     def shoot(self):
@@ -64,7 +62,6 @@ class Player(Sprite):
                 self.game.special_ammo -= 1
             elif self.game.ammo > 0:
                 p = PlayerProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
-                print("you shot!")
                 self.game.ammo -= 1
             else:
                 print("NO AMMO")
@@ -120,10 +117,8 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Powerup":
                 powerupChoice = random.randint(0, 100)
                 if powerupChoice <= 30:
-                    print("extra speed!")
                     self.game.speed_multiplier += 0.5
                 elif powerupChoice > 30 and powerupChoice <= 60:
-                    print("extra life!")
                     self.game.ammo += 5
                 elif powerupChoice > 60 and powerupChoice <= 90:
                     self.game.projectileSpeed += 0.5
@@ -133,19 +128,16 @@ class Player(Sprite):
                 self.game.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
                 # self.game.new()
-                print(self.game.level)
                 self.game.level += 1
                 textLevel = "level" + str(self.game.level) + ".txt"
                 self.game.load_data(textLevel)
                 self.game.new()
-                print(textLevel)
             if str(hits[0].__class__.__name__) == "Mob":
                 self.game.lives -= 1
             if str(hits[0].__class__.__name__) == "BossProjectile":
                 self.game.lives -= 1
             if str(hits[0].__class__.__name__) == "SpecialProjectile":
                 self.game.special_ammo += 1
-                print(self.game.special_ammo)
 
                 # replace the print function to call a method that will load next level
             
@@ -289,10 +281,8 @@ class PlayerProjectile(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "BossProjectile":
-                print("I hit a bullet")
                 self.kill()
             if str(hits[0].__class__.__name__) == "Mob":
-                print("I hit a mob")
                 self.kill()
             # Add more to this later for special bullets
     def update(self):
@@ -323,7 +313,6 @@ class Boss(Sprite):
         for angle in angles:
             # creates 24 projectile sprites all offset by 15 degrees
             p = BossProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
-            print(angle)
             # self.game.all_projectiles.add(p)
     def update(self):
         # gets current time
@@ -351,7 +340,6 @@ class BossProjectile(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Wall":
-                print("I hit a wall")
                 self.kill()
             if str(hits[0].__class__.__name__) == "ShootSpecialProjectile":
                 self.kill()
@@ -376,7 +364,6 @@ class SpecialProjectile(Sprite):
     def update(self):
         if pg.sprite.collide_rect(self, self.game.player):
             self.collected = True
-            self.kill()
 
 class ShootSpecialProjectile(Sprite):
     def __init__(self, game, x, y, angle):
@@ -394,7 +381,6 @@ class ShootSpecialProjectile(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Boss":
-                print("I hit a boss")
                 self.game.boss_lives -= 1
             if str(hits[0].__class__.__name__) == "BossProjectile":
                 print("I hit a boss projectile")
@@ -409,7 +395,7 @@ class ShootSpecialProjectile(Sprite):
             self.rect.y < 0 or self.rect.y > HEIGHT):
             self.kill() 
         # Collision:
-        self.collide_with_stuff(self.game.all_bosses, False)
+        self.collide_with_stuff(self.game.all_bosses, True)
         self.collide_with_stuff(self.game.all_bossprojectiles, True)
         self.collide_with_stuff(self.game.all_mobs, True)
         self.collide_with_stuff(self.game.all_walls, True)

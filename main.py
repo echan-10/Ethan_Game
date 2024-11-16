@@ -113,6 +113,7 @@ class Game:
                     InvisibleWall(self, col, row)
                 if self.level == 3:
                     SpecialProjectile(self)
+                    print("i have a special projectile")
             
     # while self.running keeps checking to see if the game is still running
     # if self.running is True, it will run events(), update(), and draw()
