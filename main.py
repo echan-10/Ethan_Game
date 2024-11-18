@@ -34,6 +34,8 @@ class Game:
         self.speed_multiplier = 1
         self.projectileSpeed = 1
         self.special_ammo = 0
+        self.collected = True
+        self.running = True
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -42,7 +44,6 @@ class Game:
         pg.display.set_caption("Ethan's Game")
         # game clock which allows us to set the framerate
         self.clock = pg.time.Clock()
-        self.running = True
         self.load_data("level1.txt") # CHANGE THIS LATER
 
     def load_data(self, level):
@@ -111,7 +112,7 @@ class Game:
                     Boss(self, col, row)
                 if tile == "I":
                     InvisibleWall(self, col, row)
-                if self.level == 3:
+        if self.level == 3:
                     SpecialProjectile(self)
                     print("i have a special projectile")
             
@@ -158,6 +159,9 @@ class Game:
             self.draw_text(self.screen, "Coins Collected: " + str(self.coins) , 24, WHITE, WIDTH - 940, HEIGHT - 750)
             self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH - 985, HEIGHT - 730)
             self.draw_text(self.screen, "Ammo: " + str(self.ammo) , 24, WHITE, WIDTH - 980, HEIGHT - 710)
+            self.draw_text(self.screen, "Special Ammo: " + str(self.special_ammo) , 24, WHITE, WIDTH - 945, HEIGHT - 690)
+            if self.level == 3:
+                 self.draw_text(self.screen, "Boss Lives: " + str(self.boss_lives) , 24, WHITE, WIDTH - 945, HEIGHT - 670)
             pg.display.flip()
         else:
             print("YIKES")

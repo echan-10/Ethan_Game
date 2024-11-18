@@ -136,8 +136,9 @@ class Player(Sprite):
                 self.game.lives -= 1
             if str(hits[0].__class__.__name__) == "BossProjectile":
                 self.game.lives -= 1
-            if str(hits[0].__class__.__name__) == "SpecialProjectile":
-                self.game.special_ammo += 1
+            # if str(hits[0].__class__.__name__) == "SpecialProjectile":
+            #     self.game.special_ammo += 1
+            #     SpecialProjectile(self.game)
 
                 # replace the print function to call a method that will load next level
             
@@ -324,6 +325,8 @@ class Boss(Sprite):
             self.shootTimer = current_time
         if self.game.boss_lives == 0:
             self.kill()
+            self.game.running = False
+            print("YOU WIN!!!!!!!")
 class BossProjectile(Sprite):
     def __init__(self, game, x, y, angle):
         self.groups = game.all_sprites, game.all_bossprojectiles
@@ -357,13 +360,20 @@ class SpecialProjectile(Sprite):
         self.rect = self.image.get_rect()
         self.image.fill(SKYBLUE)
         self.position = random.choice([(5, 5), (10, 10), (15, 15), (20, 20)])
-        self.rect.x = self.position[0] * TILESIZE
-        self.rect.y = self.position[1] * TILESIZE
-        self.visible = True
-        self.collected = False
+        print("you instantiated specialprojectile")
+        if self.game.collected == True:
+            print("it wokred")
+            self.rect.x = self.position[0] * TILESIZE
+            self.rect.y = self.position[1] * TILESIZE
+            self.game.collected = False
+
     def update(self):
         if pg.sprite.collide_rect(self, self.game.player):
-            self.collected = True
+            self.game.special_ammo += 1
+            self.game.collected = True
+            self.kill()
+            SpecialProjectile(self.game)
+
 
 class ShootSpecialProjectile(Sprite):
     def __init__(self, game, x, y, angle):
@@ -382,6 +392,7 @@ class ShootSpecialProjectile(Sprite):
         if hits:
             if str(hits[0].__class__.__name__) == "Boss":
                 self.game.boss_lives -= 1
+                self.kill()
             if str(hits[0].__class__.__name__) == "BossProjectile":
                 print("I hit a boss projectile")
             if str(hits[0].__class__.__name__) == "Mob":
@@ -395,7 +406,7 @@ class ShootSpecialProjectile(Sprite):
             self.rect.y < 0 or self.rect.y > HEIGHT):
             self.kill() 
         # Collision:
-        self.collide_with_stuff(self.game.all_bosses, True)
+        self.collide_with_stuff(self.game.all_bosses, False)
         self.collide_with_stuff(self.game.all_bossprojectiles, True)
         self.collide_with_stuff(self.game.all_mobs, True)
         self.collide_with_stuff(self.game.all_walls, True)
