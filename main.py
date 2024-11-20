@@ -69,6 +69,7 @@ class Game:
         self.all_projectiles = pg.sprite.Group()
         self.all_playerprojectiles = pg.sprite.Group()
         self.all_bossprojectiles = pg.sprite.Group()
+        self.all_mobprojectiles = pg.sprite.Group()
         self.all_bosses = pg.sprite.Group()
         self.all_invisiblewalls = pg.sprite.Group()
         self.all_specialprojectiles = pg.sprite.Group()
