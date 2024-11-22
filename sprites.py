@@ -7,6 +7,7 @@ from settings import *
 from utils import *
 import math
 # from threading import Timer
+vec = pg.math.Vector2
 
 class Player(Sprite):
     def __init__(self, game, x, y, col=None, row=None):
@@ -335,6 +336,12 @@ class Boss(Sprite):
         for angle in angles:
             # creates 24 projectile sprites all offset by 15 degrees
             p = BossProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
+        mob_x = random.randint(1, 31)
+        mob_y = random.randint(1, 24)
+        mob = Mob(self.game, mob_x, mob_y)
+        print("mob spawned")
+        print(self.game.all_mobs)
+        print(mob_x, mob_y)
             # self.game.all_projectiles.add(p)
     def update(self):
         # gets current time
@@ -342,6 +349,7 @@ class Boss(Sprite):
         # finds time difference between every shot and checks to see if 5 seconds have passed
         if current_time - self.shootTimer >= self.shootCountdown:
             self.shoot()
+            
             # reset the timer to the current time (or 5 seconds), so the boss doesn't rapid fire within the 5 seconds
             self.shootTimer = current_time
         if self.game.boss_lives == 0:
@@ -393,12 +401,15 @@ class MobProjectile(Sprite):
                 self.kill()
             if str(hits[0].__class__.__name__) == "ShootSpecialProjectile":
                 self.kill()
+            if str(hits[0].__class__.__name__) == "Wall":
+                self.kill()
             
     def update(self):
         self.rect.x += self.vx
         self.rect.y += self.vy
         self.collide_with_stuff(self.game.all_shootspecialprojectiles, True)
         self.collide_with_stuff(self.game.all_playerprojectiles, True)
+        self.collide_with_stuff(self.game.all_walls, False)
 
 class SpecialProjectile(Sprite):
     def __init__(self, game):
