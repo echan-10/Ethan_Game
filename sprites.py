@@ -100,6 +100,7 @@ class Player(Sprite):
         if hits and not self.jumping:
             self.jumping = True
             self.vel.y = -self.jump_power
+            pg.mixer.Sound.play(self.game.jump_snd)
 
     def shoot(self):
         mouse_x, mouse_y = pg.mouse.get_pos()
@@ -214,6 +215,7 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Powerup":
+                pg.mixer.Sound.play(self.game.gainhp_snd)
                 powerupChoice = random.randint(0, 100)
                 if powerupChoice <= 30:
                     self.game.speed_multiplier += 0.5
@@ -224,8 +226,10 @@ class Player(Sprite):
                 else:
                     self.game.lives += 1
             if str(hits[0].__class__.__name__) == "Coin":
+                pg.mixer.Sound.play(self.game.coin_snd)
                 self.game.coins += 1
             if str(hits[0].__class__.__name__) == "Portal":
+                pg.mixer.Sound.stop(self.game.portal_snd)
                 # self.game.new()
                 self.game.level += 1
                 textLevel = "level" + str(self.game.level) + ".txt"
@@ -406,6 +410,7 @@ class Portal(Sprite):
         if self.game.coins == 3:
             self.rect.x = self.x_original
             self.rect.y = self.y_original
+            pg.mixer.Sound.play(self.game.portal_snd)
         else:
             self.rect.x = self.x_original + (100 * TILESIZE)
 

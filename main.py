@@ -29,7 +29,7 @@ class Game:
         self.game = Game
         # define variables that are not supposed to be reset every level here
         self.level = 1 # CHANGE THIS LATER
-        self.lives = 1000
+        self.lives = 10
         self.boss_lives = 2
         self.speed_multiplier = 1
         self.projectileSpeed = 1
@@ -46,10 +46,22 @@ class Game:
         # game clock which allows us to set the framerate
         self.clock = pg.time.Clock()
         self.load_data("level1.txt") # CHANGE THIS LATER
+        pg.mixer.Sound.play(self.music)
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
         self.img_folder = path.join(self.game_folder, 'images')
+        self.snd_folder = path.join(self.game_folder, 'sounds')
+
+        # load sounds
+        self.coin_snd = pg.mixer.Sound(path.join(self.snd_folder, 'coin_sound.wav'))
+        self.gainhp_snd = pg.mixer.Sound(path.join(self.snd_folder, 'gainhp_sound.wav'))
+        self.jump_snd = pg.mixer.Sound(path.join(self.snd_folder, 'jump_sound.wav'))
+        self.portal_snd = pg.mixer.Sound(path.join(self.snd_folder, 'portal_sound.mp3'))
+        self.portal_snd.set_volume(0.3)
+        self.music = pg.mixer.Sound(path.join(self.snd_folder, 'background_music.mp3'))
+
+
         self.map = Map(path.join(self.game_folder, level))
         # self.player_img = pg.image.load(path.join(self.img_folder, "bell.png"))
         print("Opened new level")
