@@ -7,8 +7,8 @@ from settings import *
 from tilemap import *
 from os import path
 from sprites import *
-from sprites_sidescroller import Player as SideScrollerPlayer  # Import sidescroller player
-from sprites_sidescroller import Projectile
+# from sprites_sidescroller import Player as SideScrollerPlayer  # Import sidescroller player
+# from sprites_sidescroller import Projectile
 
 '''
 Elevator Pitch: I want to create a game where a character must complete three levels to reach the top of the castle and defeat a final boss. There will be obstacles, disappearing walls that are randomly generated, enemies, and teleportation portals at the end of each level that will take to the player to the next level.
@@ -29,13 +29,14 @@ class Game:
         self.game = Game
         # define variables that are not supposed to be reset every level here
         self.level = 1 # CHANGE THIS LATER
-        self.lives = 5
+        self.lives = 1000
         self.boss_lives = 2
         self.speed_multiplier = 1
         self.projectileSpeed = 1
         self.special_ammo = 0
         self.collected = True
         self.running = True
+        self.top_down = True
         pg.init()
         pg.mixer.init()
         # this sets the length and width of the screen
@@ -74,6 +75,14 @@ class Game:
         self.all_invisiblewalls = pg.sprite.Group()
         self.all_specialprojectiles = pg.sprite.Group()
         self.all_shootspecialprojectiles = pg.sprite.Group()
+
+        print(self.level)
+        if self.level == 1:
+            self.top_down = True
+        elif self.level == 2:
+            self.top_down = False
+        elif self.level == 3:
+            self.top_down = True
         # creates a new player instance sprite at 50, 50 
         # self.player = Player(self, 1, 1)
         # creates a new mob instance sprite at 100, 100
@@ -96,10 +105,8 @@ class Game:
                 if tile == "1":
                     Wall(self, col, row)
                 if tile == "P":
-                    if self.level == 2:
-                        self.player = SideScrollerPlayer(self, col, row)  # Sidescroller movement
-                    else:
-                        self.player = Player(self, col, row)  # Default top-down movement
+                    self.player = Player(self, col, row)  # Default top-down movement
+                    
                     # self.player = Player(self, col, row)
                 if tile == "M":
                     Mob(self, col, row)

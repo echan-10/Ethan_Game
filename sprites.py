@@ -13,20 +13,36 @@ class Player(Sprite):
     def __init__(self, game, x, y, col=None, row=None):
         self.game = game
         self.groups = game.all_sprites
+        print(self.game.top_down)
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
         self.image.fill(RED)
         # self.rect.x = x
         # self.rect.y = y
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
-        self.max_speed = 400
-        self.speed = 10
-        self.vx, self.vy = 0, 0
-        self.cd = Cooldown()
+        if self.game.top_down == True:
+            print("top down")
+            self.x = x * TILESIZE
+            self.y = y * TILESIZE
+            self.max_speed = 400
+            self.speed = 10
+            self.vx, self.vy = 0, 0
+            print(self.x, self.y)
+            self.cd = Cooldown()
+        if self.game.top_down == False:
+            print("sidescroller")
 
-    def get_keys(self):
+            self.pos = vec(x * TILESIZE, y * TILESIZE)
+            print(self.pos)
+            self.vel = vec(0, 0)
+            self.acc = vec(0, 0)
+            self.speed = 1.5
+            self.jumping = False
+            self.jump_power = 13
+            self.max_speed = 10
+            self.cd = Cooldown()
+
+    def top_down_get_keys(self):
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
             self.vy -= self.speed * self.game.speed_multiplier
@@ -49,11 +65,50 @@ class Player(Sprite):
                 self.vy = -self.max_speed
         if pg.mouse.get_pressed()[0]:
             self.shoot()
+    
+    def sidescroller_get_keys(self):
+        keys = pg.key.get_pressed()
+        # if keys[pg.K_w]:
+        #     self.vy -= self.speed
+        if keys[pg.K_a]:
+            self.vel.x -= self.speed  
+            print(self.vel.x)  
+        # if keys[pg.K_s]:
+        #     self.vy += self.speed
+        if keys[pg.K_d]:
+            self.vel.x += self.speed
+            print(self.vel.x)
+        if keys[pg.K_SPACE]:
+            self.jump()
+
+        if abs(self.vel.x) > self.max_speed:
+            if self.vel.x > 0:
+                self.vel.x = self.max_speed
+            elif self.vel.x < 0:
+                self.vel.x = -self.max_speed
+        if pg.mouse.get_pressed()[0]:
+            print(pg.mouse.get_pos())
+            self.shoot()
+
+    def jump(self):
+        print("I'm trying to jump")
+        print(self.vel.y)
+        self.rect.y += 2
+        # adjusts the y value to be 2 pixels lower to detect collision with platform to jump
+        hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+        self.rect.y -= 2
+        if hits and not self.jumping:
+            self.jumping = True
+            self.vel.y = -self.jump_power
 
     def shoot(self):
         mouse_x, mouse_y = pg.mouse.get_pos()
-        dx = mouse_x - self.x
-        dy = mouse_y - self.y
+        if self.game.top_down == True:
+            dx = mouse_x - self.x
+            dy = mouse_y - self.y
+        elif self.game.top_down == False:
+            dx = mouse_x - self.pos.x
+            dy = mouse_y - self.pos.y
         angle = math.atan2(dy, dx)
 
         self.cd.event_time = floor(pg.time.get_ticks()/1000)
@@ -70,11 +125,11 @@ class Player(Sprite):
             print("Weapon on cooldown")
 
 
-
-    def collide_with_walls(self, dir):
+    def top_down_collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
-            if hits:
+            hits2 = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
+            if hits or hits2:
                 if self.vx > 0:
                     self.x = hits[0].rect.left - self.rect.width
                 if self.vx < 0:
@@ -83,16 +138,38 @@ class Player(Sprite):
                 self.rect.x = self.x
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
-            if hits:
+            hits2 = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
+            if hits or hits2:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.height
                 if self.vy < 0:
                     self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
+    
+    def sidescroller_collide_with_walls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+            if hits:
+                if self.vel.x > 0:
+                    self.pos.x = hits[0].rect.left - self.rect.width
+                if self.vel.x < 0:
+                    self.pos.x = hits[0].rect.right
+                self.vel.x = 0
+                self.rect.x = self.pos.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+            if hits:
+                if self.vel.y > 0:
+                    self.pos.y= hits[0].rect.top - self.rect.height
+                    self.jumping = False
+                if self.vel.y < 0:
+                    self.pos.y = hits[0].rect.bottom
+                self.vel.y = 0
+                self.rect.y = self.pos.y
 
 
-    def collide_with_invisiblewalls(self, dir):
+    def top_down_collide_with_invisiblewalls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
             if hits:
@@ -111,6 +188,27 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
+        
+    def sidescroller_collide_with_invisible_walls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
+            if hits:
+                if self.vel.x > 0:
+                    self.pos.x = hits[0].rect.left - self.rect.width
+                if self.vel.x < 0:
+                    self.pos.x = hits[0].rect.right
+                self.vel.x = 0
+                self.rect.x = self.pos.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
+            if hits:
+                if self.vel.y > 0:
+                    self.pos.y= hits[0].rect.top - self.rect.height
+                    self.jumping = False
+                if self.vel.y < 0:
+                    self.pos.y = hits[0].rect.bottom
+                self.vel.y = 0
+                self.rect.y = self.pos.y
 
     def collide_with_stuff(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
@@ -149,9 +247,34 @@ class Player(Sprite):
 
     def update(self):
         self.cd.ticking()
-        self.get_keys()
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
+        if self.game.top_down == True:
+            self.top_down_get_keys()
+            self.x += self.vx * self.game.dt
+            self.y += self.vy * self.game.dt
+
+            self.rect.x = self.x
+            self.top_down_collide_with_walls('x')
+            self.top_down_collide_with_invisiblewalls('x')
+            self.rect.y = self.y
+            self.top_down_collide_with_walls('y')
+            self.top_down_collide_with_invisiblewalls('y')
+        elif self.game.top_down == False:
+            self.acc = vec(0, GRAVITY)
+            self.sidescroller_get_keys()
+            self.acc.x += self.vel.x * FRICTION
+            self.vel += self.acc
+
+            if abs(self.vel.x) < 0.1:
+                self.vel.x = 0
+
+            self.pos += self.vel + 0.5 * self.acc
+
+            self.rect.x = self.pos.x
+            self.sidescroller_collide_with_walls('x')
+            self.sidescroller_collide_with_invisible_walls('x')
+            self.rect.y = self.pos.y
+            self.sidescroller_collide_with_walls('y')
+            self.sidescroller_collide_with_invisible_walls('y')
 
         self.collide_with_stuff(self.game.all_powerups, True)
         self.collide_with_stuff(self.game.all_coins, True)
@@ -161,12 +284,9 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_mobprojectiles, True)
         self.collide_with_stuff(self.game.all_specialprojectiles, True)
 
-        self.rect.x = self.x
-        self.collide_with_walls('x')
-        self.collide_with_invisiblewalls('x')
-        self.rect.y = self.y
-        self.collide_with_walls('y')
-        self.collide_with_invisiblewalls('y')
+
+
+            
 
         # self.rect.x = self.x
         # self.collide_with_invisiblewalls('x')
@@ -191,7 +311,11 @@ class Mob(Sprite):
     def shoot(self):
         # gets all the angles in pi radians for every 15 degrees (15 * 24 iterations = 360 degrees)
         mob_x, mob_y = self.rect.centerx, self.rect.centery
-        player_x, player_y = self.game.player.x, self.game.player.y
+        if self.game.top_down:
+            player_x, player_y = self.game.player.x, self.game.player.y
+        else:
+            player_x, player_y = self.game.player.pos.x, self.game.player.pos.y
+        # player_x, player_y = self.game.player.x, self.game.player.y
         dx = player_x - mob_x
         dy = player_y - mob_y
         angle = math.atan2(dy, dx)
@@ -401,15 +525,15 @@ class MobProjectile(Sprite):
                 self.kill()
             if str(hits[0].__class__.__name__) == "ShootSpecialProjectile":
                 self.kill()
-            if str(hits[0].__class__.__name__) == "Wall":
-                self.kill()
+            # if str(hits[0].__class__.__name__) == "Wall":
+            #     self.kill()
             
     def update(self):
         self.rect.x += self.vx
         self.rect.y += self.vy
         self.collide_with_stuff(self.game.all_shootspecialprojectiles, True)
         self.collide_with_stuff(self.game.all_playerprojectiles, True)
-        self.collide_with_stuff(self.game.all_walls, False)
+        # self.collide_with_stuff(self.game.all_walls, False)
 
 class SpecialProjectile(Sprite):
     def __init__(self, game):
