@@ -228,6 +228,7 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Coin":
                 pg.mixer.Sound.play(self.game.coin_snd)
                 self.game.coins += 1
+                self.game.score += 1
             if str(hits[0].__class__.__name__) == "Portal":
                 pg.mixer.Sound.stop(self.game.portal_snd)
                 # self.game.new()
@@ -311,31 +312,71 @@ class Mob(Sprite):
         self.rect.y = y * TILESIZE
         self.speed = 10
         self.shootTimer = 0
+        self.moveTimer = 0
         self.shootCountdown = random.randint(1000, 2000)
+        self.moveCountdown = random.randint(1000, 3000)
+        self.move()
     def shoot(self):
-        # gets all the angles in pi radians for every 15 degrees (15 * 24 iterations = 360 degrees)
-        mob_x, mob_y = self.rect.centerx, self.rect.centery
+        self.mob_x, self.mob_y = self.rect.centerx, self.rect.centery
+
+        # self.game.player.x is for top down movement
+        # self.game.player.pos.x is for sidescroller movement
         if self.game.top_down:
             player_x, player_y = self.game.player.x, self.game.player.y
         else:
             player_x, player_y = self.game.player.pos.x, self.game.player.pos.y
         # player_x, player_y = self.game.player.x, self.game.player.y
-        dx = player_x - mob_x
-        dy = player_y - mob_y
+        dx = player_x - self.mob_x
+        dy = player_y - self.mob_y
         angle = math.atan2(dy, dx)
         p = MobProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
+
+    def move(self):
+        # self.mob_x, self.mob_y = self.rect.centerx, self.rect.centery
+        global random_pos_x
+        global random_pos_y
+        random_pos_x = random.randint(0, (WIDTH // TILESIZE) - 1) * TILESIZE
+        random_pos_y = random.randint(0, (HEIGHT // TILESIZE) - 1) * TILESIZE
+        print("x:", random_pos_x)
+        print("y:", random_pos_y)
+        dx = random_pos_x - self.rect.x
+        dy = random_pos_y - self.rect.y
+        angle = math.atan2(dy, dx)
+        self.vx = self.speed * math.cos(angle)
+        self.vy = self.speed * math.sin(angle)
+
+
     def update(self):
         # gets current time
-        current_time = pg.time.get_ticks()
+        # if self.rect.x <= 0:
+        #     self.rect.x = 0
+        # if self.rect.x >= WIDTH - TILESIZE:
+        #     self.rect.x >= WIDTH - TILESIZE
+        # if self.rect.y <= 0:
+        #     self.rect.y = 0
+        # if self.rect.y >= HEIGHT - TILESIZE:
+        #     self.rect.y = HEIGHT - TILESIZE
+
+        self.rect.x += self.vx
+        self.rect.y += self.vy
+
+        current_move_time = pg.time.get_ticks()
+        if current_move_time - self.moveTimer >= self.moveCountdown:
+            self.move()
+            self.moveTimer = current_move_time
+
+        
+        current_shoot_time = pg.time.get_ticks()
         # finds time difference between every shot and checks to see if 2 seconds have passed
-        if current_time - self.shootTimer >= self.shootCountdown:
+        if current_shoot_time - self.shootTimer >= self.shootCountdown:
             self.shoot()
             # reset the timer to the current time (or 2 seconds), so the mob doesn't rapid fire within the 2 seconds
-            self.shootTimer = current_time
-        self.rect.x += self.speed
-        if self.rect.right > WIDTH or self.rect.left < 0:
-            self.speed *= -1
-            self.rect.y += 32
+            self.shootTimer = current_shoot_time
+        
+
+        # if self.rect.right > WIDTH or self.rect.left < 0:
+        #     self.speed *= -1
+        #     self.rect.y += 32
         # elif self.rect.colliderect(self.game.player):
         #     self.speed *= -1
         # moving towards the side of the screen
@@ -465,6 +506,7 @@ class Boss(Sprite):
         for angle in angles:
             # creates 24 projectile sprites all offset by 15 degrees
             p = BossProjectile(self.game, self.rect.centerx, self.rect.centery, angle)
+        # spawns mob at a random location
         mob_x = random.randint(1, 31)
         mob_y = random.randint(1, 24)
         mob = Mob(self.game, mob_x, mob_y)

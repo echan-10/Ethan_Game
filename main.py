@@ -28,6 +28,8 @@ class Game:
     def __init__(self):
         self.game = Game
         # define variables that are not supposed to be reset every level here
+        self.score = 0
+        # self.highscore = 0
         self.level = 1 # CHANGE THIS LATER
         self.lives = 10
         self.boss_lives = 2
@@ -50,6 +52,19 @@ class Game:
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
+        # LOAD HIGH SCORE FILE
+
+        with open(path.join(self.game_folder, HS_FILE), 'w') as file:
+            file.write("High Score File")
+        
+        print("File created")
+
+        with open(path.join(self.game_folder, HS_FILE), 'r') as f:
+            try:
+                self.highscore = int(f.read())
+            except:
+                 self.highscore = 0
+                
         self.img_folder = path.join(self.game_folder, 'images')
         self.snd_folder = path.join(self.game_folder, 'sounds')
 
@@ -57,9 +72,10 @@ class Game:
         self.coin_snd = pg.mixer.Sound(path.join(self.snd_folder, 'coin_sound.wav'))
         self.gainhp_snd = pg.mixer.Sound(path.join(self.snd_folder, 'gainhp_sound.wav'))
         self.jump_snd = pg.mixer.Sound(path.join(self.snd_folder, 'jump_sound.wav'))
-        self.portal_snd = pg.mixer.Sound(path.join(self.snd_folder, 'portal_sound.mp3'))
+        self.portal_snd = pg.mixer.Sound(path.join(self.snd_folder, 'portal_sound.wav'))
         self.portal_snd.set_volume(0.3)
         self.music = pg.mixer.Sound(path.join(self.snd_folder, 'background_music.mp3'))
+        self.music.set_volume(0.5)
 
 
         self.map = Map(path.join(self.game_folder, level))
@@ -146,16 +162,20 @@ class Game:
             self.events()
             self.update()
             self.draw()
-            if self.lives == 0:
+            if self.lives <= 0:
                     # checks number of lives and sees if you have any more lives
                     self.running = False
 
     def events(self):
         # constantly listens for an event, such as keystrokes
         for event in pg.event.get():
-                # closes game if there are no more events
-                if event.type == pg.QUIT:
-                    self.running = False
+            # closes game if there are no more events
+            if event.type == pg.QUIT:
+                if self.score > self.highscore:
+                    self.highscore = self.score
+                self.running = False
+            
+                
 
     # updates the sprites on the screen, so that the sprites will move when its x or y coordinate changes
     def update(self):
