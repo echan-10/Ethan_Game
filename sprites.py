@@ -228,7 +228,7 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Coin":
                 pg.mixer.Sound.play(self.game.coin_snd)
                 self.game.coins += 1
-                self.game.score += 1
+                self.game.score += 1000
             if str(hits[0].__class__.__name__) == "Portal":
                 pg.mixer.Sound.stop(self.game.portal_snd)
                 # self.game.new()
@@ -525,6 +525,7 @@ class Boss(Sprite):
             self.shootTimer = current_time
         if self.game.boss_lives == 0:
             self.kill()
+            self.game.highscoreCheck()
             self.game.running = False
             print("YOU WIN!!!!!!!")
 class BossProjectile(Sprite):

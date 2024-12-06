@@ -28,10 +28,10 @@ class Game:
     def __init__(self):
         self.game = Game
         # define variables that are not supposed to be reset every level here
-        self.score = 0
         # self.highscore = 0
         self.level = 1 # CHANGE THIS LATER
         self.lives = 10
+        self.score = 0
         self.boss_lives = 2
         self.speed_multiplier = 1
         self.projectileSpeed = 1
@@ -54,16 +54,18 @@ class Game:
         self.game_folder = path.dirname(__file__)
         # LOAD HIGH SCORE FILE
 
-        with open(path.join(self.game_folder, HS_FILE), 'w') as file:
-            file.write("High Score File")
+        # with open(path.join(self.game_folder, HS_FILE), 'w') as file:
+        #     file.write("High Score File")
         
-        print("File created")
+        # print("File created")
 
-        with open(path.join(self.game_folder, HS_FILE), 'r') as f:
-            try:
+        try:
+            with open(path.join(self.game_folder, HS_FILE), 'r') as f:
                 self.highscore = int(f.read())
-            except:
-                 self.highscore = 0
+        except:
+            self.highscore = 0
+            with open(path.join(self.game_folder, HS_FILE), 'w') as f:
+                f.write(str(self.highscore))
                 
         self.img_folder = path.join(self.game_folder, 'images')
         self.snd_folder = path.join(self.game_folder, 'sounds')
@@ -163,17 +165,19 @@ class Game:
             self.update()
             self.draw()
             if self.lives <= 0:
-                    # checks number of lives and sees if you have any more lives
-                    self.running = False
+                # checks number of lives and sees if you have any more lives
+                self.highscoreCheck()
+                self.running = False
 
     def events(self):
         # constantly listens for an event, such as keystrokes
         for event in pg.event.get():
             # closes game if there are no more events
             if event.type == pg.QUIT:
-                if self.score > self.highscore:
-                    self.highscore = self.score
+                self.highscoreCheck()
                 self.running = False
+
+
             
                 
 
@@ -200,13 +204,20 @@ class Game:
             self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH - 985, HEIGHT - 730)
             self.draw_text(self.screen, "Ammo: " + str(self.ammo) , 24, WHITE, WIDTH - 980, HEIGHT - 710)
             self.draw_text(self.screen, "Special Ammo: " + str(self.special_ammo) , 24, WHITE, WIDTH - 945, HEIGHT - 690)
+            self.draw_text(self.screen, "High Score: " + str(self.highscore), 24, WHITE, WIDTH - 68, HEIGHT - 770)
+            self.draw_text(self.screen, "Current Score: " + str(self.score), 24, WHITE, WIDTH - 80, HEIGHT - 750)
             if self.level == 3:
-                 self.draw_text(self.screen, "Boss Lives: " + str(self.boss_lives) , 24, WHITE, WIDTH - 945, HEIGHT - 670)
+                self.draw_text(self.screen, "Boss Lives: " + str(self.boss_lives) , 24, WHITE, WIDTH - 945, HEIGHT - 670)
             pg.display.flip()
         else:
             print("YIKES")
             self.running = False
             # can use this code to give end screen if player dies
+
+    def highscoreCheck(self):
+        if self.score > self.highscore:
+            with open(path.join(self.game_folder, HS_FILE), 'w') as f:
+                f.write(str(self.score))
 
     # checks file name and runs the game loop by running the new() and run() methods
 if __name__ == "__main__":
