@@ -30,7 +30,7 @@ class Game:
         # define variables that are not supposed to be reset every level here
         # self.highscore = 0
         self.level = 1 # CHANGE THIS LATER
-        self.lives = 1000
+        self.lives = 15
         self.score = 0
         self.boss_lives = 2
         self.speed_multiplier = 1
