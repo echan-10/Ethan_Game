@@ -36,9 +36,9 @@ class Player(Sprite):
             print(self.pos)
             self.vel = vec(0, 0)
             self.acc = vec(0, 0)
-            self.speed = 1.5
+            self.speed = 2
             self.jumping = False
-            self.jump_power = 13
+            self.jump_power = 15
             self.max_speed = 10
             self.cd = Cooldown()
 
@@ -130,21 +130,35 @@ class Player(Sprite):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             hits2 = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
-            if hits or hits2:
+            if hits:
                 if self.vx > 0:
                     self.x = hits[0].rect.left - self.rect.width
                 if self.vx < 0:
                     self.x = hits[0].rect.right
                 self.vx = 0
                 self.rect.x = self.x
+            if hits2:
+                if self.vx > 0:
+                    self.x = hits2[0].rect.left - self.rect.width
+                if self.vx < 0:
+                    self.x = hits2[0].rect.right
+                self.vx = 0
+                self.rect.x = self.x
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             hits2 = pg.sprite.spritecollide(self, self.game.all_invisiblewalls, False)
-            if hits or hits2:
+            if hits:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.height
                 if self.vy < 0:
                     self.y = hits[0].rect.bottom
+                self.vy = 0
+                self.rect.y = self.y
+            if hits2:
+                if self.vy > 0:
+                    self.y = hits2[0].rect.top - self.rect.height
+                if self.vy < 0:
+                    self.y = hits2[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
     
@@ -238,6 +252,7 @@ class Player(Sprite):
                 self.game.new()
             if str(hits[0].__class__.__name__) == "Mob":
                 self.game.lives -= 1
+                self.game.score += 500
             if str(hits[0].__class__.__name__) == "BossProjectile":
                 self.game.lives -= 1
             if str(hits[0].__class__.__name__) == "MobProjectile":
@@ -280,6 +295,9 @@ class Player(Sprite):
             self.rect.y = self.pos.y
             self.sidescroller_collide_with_walls('y')
             self.sidescroller_collide_with_invisible_walls('y')
+            if self.pos.y > HEIGHT:
+                self.pos.x, self.pos.y = 96, 704
+                print("You fell off the map!")
 
         self.collide_with_stuff(self.game.all_powerups, True)
         self.collide_with_stuff(self.game.all_coins, True)
@@ -448,7 +466,7 @@ class Portal(Sprite):
         self.rect.x = self.x_original + (100 * TILESIZE)
         self.rect.y = self.y_original
     def update(self):
-        if self.game.coins == 3:
+        if self.game.coins >= 3:
             self.rect.x = self.x_original
             self.rect.y = self.y_original
             pg.mixer.Sound.play(self.game.portal_snd)
@@ -474,6 +492,7 @@ class PlayerProjectile(Sprite):
                 self.kill()
             if str(hits[0].__class__.__name__) == "Mob":
                 self.kill()
+                self.game.score += 500
             if str(hits[0].__class__.__name__) == "MobProjectile":
                 self.kill()
             # Add more to this later for special bullets
@@ -625,6 +644,7 @@ class ShootSpecialProjectile(Sprite):
             if str(hits[0].__class__.__name__) == "Boss":
                 self.game.boss_lives -= 1
                 self.kill()
+                self.game.score += 2000
             if str(hits[0].__class__.__name__) == "BossProjectile":
                 print("I hit a boss projectile")
             if str(hits[0].__class__.__name__) == "Mob":

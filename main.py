@@ -30,7 +30,7 @@ class Game:
         # define variables that are not supposed to be reset every level here
         # self.highscore = 0
         self.level = 1 # CHANGE THIS LATER
-        self.lives = 10
+        self.lives = 1000
         self.score = 0
         self.boss_lives = 2
         self.speed_multiplier = 1
@@ -204,7 +204,7 @@ class Game:
             self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH - 985, HEIGHT - 730)
             self.draw_text(self.screen, "Ammo: " + str(self.ammo) , 24, WHITE, WIDTH - 980, HEIGHT - 710)
             self.draw_text(self.screen, "Special Ammo: " + str(self.special_ammo) , 24, WHITE, WIDTH - 945, HEIGHT - 690)
-            self.draw_text(self.screen, "High Score: " + str(self.highscore), 24, WHITE, WIDTH - 68, HEIGHT - 770)
+            self.draw_text(self.screen, "High Score: " + str(self.highscore), 24, WHITE, WIDTH - 80, HEIGHT - 770)
             self.draw_text(self.screen, "Current Score: " + str(self.score), 24, WHITE, WIDTH - 80, HEIGHT - 750)
             if self.level == 3:
                 self.draw_text(self.screen, "Boss Lives: " + str(self.boss_lives) , 24, WHITE, WIDTH - 945, HEIGHT - 670)
