@@ -36,6 +36,9 @@ class Game:
         self.speed_multiplier = 1
         self.projectileSpeed = 1
         self.special_ammo = 0
+        self.game.mob_moveCountdown = 0
+        self.game.mob_shootCountdown = 0
+        self.game.boss_shootCountdown = 0
         self.collected = True
         self.running = True
         self.top_down = True
@@ -218,9 +221,50 @@ class Game:
         if self.score > self.highscore:
             with open(path.join(self.game_folder, HS_FILE), 'w') as f:
                 f.write(str(self.score))
+    
+    def start_screen(self):
+        self.screen.fill(BLACK)
+        self.draw_text(self.screen, "Press '8' for Easy Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 - 20)
+        self.draw_text(self.screen, "Press '9' for Default Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2)
+        self.draw_text(self.screen, "Press '0' for Hard Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 + 20)
+        pg.display.flip()
+        self.waiting()
+    def waiting(self):
+        wait = True
+        while wait:
+            keys = pg.key.get_pressed()
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    wait = False
+                    self.running = False
+                if keys[pg.K_8]:
+                    # Easy Settings
+                    self.lives = 20
+                    self.boss_lives = 1
+                    self.speed_multiplier = 2
+                    self.projectileSpeed = 2
+                    self.game.mob_moveCountdown = 1000
+                    self.game.mob_shootCountdown = 2000
+                    self.game.boss_shootCoundown = 1000
+                    wait = False
+                if keys[pg.K_9]:
+                    # Default Settings
+                    wait = False
+                if keys[pg.K_0]:
+                    # Hard Settings
+                    self.lives = 10
+                    self.boss_lives = 3
+                    self.speed_multiplier = 0.5
+                    self.projectileSpeed = 0.5
+                    self.game.mob_moveCountdown = -1000
+                    self.game.mob_shootCountdown = -1000
+                    self.game.boss_shootCoundown = -1000
+                    wait = False
 
     # checks file name and runs the game loop by running the new() and run() methods
 if __name__ == "__main__":
     g = Game()
+    g.start_screen()
     g.new()
     g.run()

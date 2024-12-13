@@ -331,8 +331,8 @@ class Mob(Sprite):
         self.speed = 10
         self.shootTimer = 0
         self.moveTimer = 0
-        self.shootCountdown = random.randint(1000, 2000)
-        self.moveCountdown = random.randint(1000, 3000)
+        self.shootCountdown = random.randint(1000, 2000) + self.game.mob_shootCountdown
+        self.moveCountdown = random.randint(1000, 3000) + self.game.mob_moveCountdown
         self.move()
     def shoot(self):
         self.mob_x, self.mob_y = self.rect.centerx, self.rect.centery
@@ -518,7 +518,7 @@ class Boss(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
         self.shootTimer = 0
-        self.shootCountdown = 5000
+        self.shootCountdown = 5000 + self.game.boss_shootCoundown
     def shoot(self):
         # gets all the angles in pi radians for every 15 degrees (15 * 24 iterations = 360 degrees)
         angles = [i * math.pi / 12 for i in range(24)]
