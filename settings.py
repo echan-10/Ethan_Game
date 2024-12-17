@@ -21,4 +21,3 @@ TRANSPARENT = (0, 0, 0, 0)
 SKYBLUE = (135, 206, 235)
 WHITE = (255, 255, 255)
 
-HS_FILE = "highscore.txt"

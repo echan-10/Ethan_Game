@@ -29,6 +29,7 @@ class Game:
         self.game = Game
         # define variables that are not supposed to be reset every level here
         # self.highscore = 0
+        self.difficulty = ""
         self.level = 1 # CHANGE THIS LATER
         self.lives = 15
         self.score = 0
@@ -50,8 +51,7 @@ class Game:
         pg.display.set_caption("Ethan's Game")
         # game clock which allows us to set the framerate
         self.clock = pg.time.Clock()
-        self.load_data("level1.txt") # CHANGE THIS LATER
-        pg.mixer.Sound.play(self.music)
+        # self.load_data("level1.txt") # CHANGE THIS LATER
 
     def load_data(self, level):
         self.game_folder = path.dirname(__file__)
@@ -61,7 +61,14 @@ class Game:
         #     file.write("High Score File")
         
         # print("File created")
-
+        global HS_FILE
+        if self.difficulty == "easy":
+            HS_FILE = "easy_highscore.txt"
+        if self.difficulty == "default":
+            HS_FILE = "default_highscore.txt"
+        if self.difficulty == "hard":
+            HS_FILE = "hard_highscore.txt"
+        
         try:
             with open(path.join(self.game_folder, HS_FILE), 'r') as f:
                 self.highscore = int(f.read())
@@ -82,8 +89,12 @@ class Game:
         self.music = pg.mixer.Sound(path.join(self.snd_folder, 'background_music.mp3'))
         self.music.set_volume(0.5)
 
+        # load images
+        self.player_img = pg.image.load(path.join(self.img_folder, 'player_img.jpg'))
+
 
         self.map = Map(path.join(self.game_folder, level))
+        pg.mixer.Sound.play(self.music)
         # self.player_img = pg.image.load(path.join(self.img_folder, "bell.png"))
         print("Opened new level")
     # this defines a new game instance of itself everytime it runs
@@ -204,11 +215,11 @@ class Game:
             self.draw_text(self.screen, str(self.dt*1000) + "FPS", 24, WHITE, WIDTH - 980, HEIGHT - 770)
             self.draw_text(self.screen, "Level " + str(self.level), 24, WHITE, WIDTH / 2, HEIGHT / 100)
             self.draw_text(self.screen, "Coins Collected: " + str(self.coins) , 24, WHITE, WIDTH - 940, HEIGHT - 750)
-            self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH - 985, HEIGHT - 730)
+            self.draw_text(self.screen, "Lives: " + str(self.lives) , 24, WHITE, WIDTH - 980, HEIGHT - 730)
             self.draw_text(self.screen, "Ammo: " + str(self.ammo) , 24, WHITE, WIDTH - 980, HEIGHT - 710)
             self.draw_text(self.screen, "Special Ammo: " + str(self.special_ammo) , 24, WHITE, WIDTH - 945, HEIGHT - 690)
             self.draw_text(self.screen, "High Score: " + str(self.highscore), 24, WHITE, WIDTH - 80, HEIGHT - 770)
-            self.draw_text(self.screen, "Current Score: " + str(self.score), 24, WHITE, WIDTH - 80, HEIGHT - 750)
+            self.draw_text(self.screen, "Current Score: " + str(self.score), 24, WHITE, WIDTH - 95, HEIGHT - 750)
             if self.level == 3:
                 self.draw_text(self.screen, "Boss Lives: " + str(self.boss_lives) , 24, WHITE, WIDTH - 945, HEIGHT - 670)
             pg.display.flip()
@@ -224,9 +235,9 @@ class Game:
     
     def start_screen(self):
         self.screen.fill(BLACK)
-        self.draw_text(self.screen, "Press '8' for Easy Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 - 20)
+        self.draw_text(self.screen, "Press '8' for Easy Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 - 40)
         self.draw_text(self.screen, "Press '9' for Default Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2)
-        self.draw_text(self.screen, "Press '0' for Hard Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 + 20)
+        self.draw_text(self.screen, "Press '0' for Hard Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 + 40)
         pg.display.flip()
         self.waiting()
     def waiting(self):
@@ -240,6 +251,7 @@ class Game:
                     self.running = False
                 if keys[pg.K_8]:
                     # Easy Settings
+                    self.difficulty = "easy"
                     self.lives = 20
                     self.boss_lives = 1
                     self.speed_multiplier = 2
@@ -250,9 +262,11 @@ class Game:
                     wait = False
                 if keys[pg.K_9]:
                     # Default Settings
+                    self.difficulty = "default"
                     wait = False
                 if keys[pg.K_0]:
                     # Hard Settings
+                    self.difficulty = "hard"
                     self.lives = 10
                     self.boss_lives = 3
                     self.speed_multiplier = 0.5
@@ -261,6 +275,7 @@ class Game:
                     self.game.mob_shootCountdown = -1000
                     self.game.boss_shootCoundown = -1000
                     wait = False
+        self.load_data("level1.txt")
 
     # checks file name and runs the game loop by running the new() and run() methods
 if __name__ == "__main__":

@@ -16,6 +16,11 @@ class Player(Sprite):
         print(self.game.top_down)
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE, TILESIZE))
+
+        # ADD PLAYER IMAGE HERE
+        # self.image = self.game.player_img
+        # self.image.set_colorkey(TRANSPARENT)
+
         self.rect = self.image.get_rect()
         self.image.fill(RED)
         # self.rect.x = x
@@ -297,6 +302,7 @@ class Player(Sprite):
             self.sidescroller_collide_with_invisible_walls('y')
             if self.pos.y > HEIGHT:
                 self.pos.x, self.pos.y = 96, 704
+                self.game.lives -= 1
                 print("You fell off the map!")
 
         self.collide_with_stuff(self.game.all_powerups, True)
@@ -559,6 +565,7 @@ class BossProjectile(Sprite):
         self.speed = 10
         self.vx = self.speed * math.cos(angle)
         self.vy = self.speed * math.sin(angle)
+
     def collide_with_stuff(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
