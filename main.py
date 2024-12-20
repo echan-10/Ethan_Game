@@ -1,4 +1,6 @@
 # This file was created by: Ethan Chan
+# Sources:
+# Chat GPT - helped with the math regarding projectiles and angles
 
 # IMPORT ALL NECESSARY MODULES AND LIBRARIES
 import pygame as pg
@@ -144,6 +146,7 @@ class Game:
         # for i in range(6):
         #     Mob(self, i*random.randint(0, WIDTH), i*random.randint(0, HEIGHT))
         
+        # iterates through every character in the tilemap and spawns in the sprite correlated to the character
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
                 if tile == "1":
@@ -181,7 +184,7 @@ class Game:
             if self.lives <= 0:
                 # checks number of lives and sees if you have any more lives
                 self.highscoreCheck()
-                self.running = False
+                self.end_screen()
 
     def events(self):
         # constantly listens for an event, such as keystrokes
@@ -239,8 +242,8 @@ class Game:
         self.draw_text(self.screen, "Press '9' for Default Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2)
         self.draw_text(self.screen, "Press '0' for Hard Difficulty!", 42, WHITE, WIDTH/2, HEIGHT/2 + 40)
         pg.display.flip()
-        self.waiting()
-    def waiting(self):
+        self.start_waiting()
+    def start_waiting(self):
         wait = True
         while wait:
             keys = pg.key.get_pressed()
@@ -276,6 +279,44 @@ class Game:
                     self.game.boss_shootCoundown = -1000
                     wait = False
         self.load_data("level1.txt")
+        self.new()
+        self.run()
+    def end_screen(self):
+        self.screen.fill(BLACK)
+        if self.lives <= 0:
+            self.draw_text(self.screen, "YOU DIED!", 42, WHITE, WIDTH/2, HEIGHT/2 - 40)
+            self.draw_text(self.screen, "Press SPACE to restart.", 42, WHITE, WIDTH/2, HEIGHT/2)
+        else:
+            self.draw_text(self.screen, "YOU WIN!", 42, WHITE, WIDTH/2, HEIGHT/2 - 40)
+            self.draw_text(self.screen, "Press SPACE to restart.", 42, WHITE, WIDTH/2, HEIGHT/2)
+        pg.display.flip()
+        self.end_waiting()
+    def end_waiting(self):
+        wait = True
+        while wait:
+            keys = pg.key.get_pressed()
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    wait = False
+                    self.running = False
+                if keys[pg.K_SPACE]:
+                    # Reset variables
+                    self.difficulty = ""
+                    self.level = 1 # CHANGE THIS LATER
+                    self.lives = 15
+                    self.score = 0
+                    self.boss_lives = 2
+                    self.speed_multiplier = 1
+                    self.projectileSpeed = 1
+                    self.special_ammo = 0
+                    self.game.mob_moveCountdown = 0
+                    self.game.mob_shootCountdown = 0
+                    self.game.boss_shootCountdown = 0
+                    self.collected = True
+                    self.running = True
+                    self.top_down = True
+                    self.start_screen()
 
     # checks file name and runs the game loop by running the new() and run() methods
 if __name__ == "__main__":

@@ -548,11 +548,12 @@ class Boss(Sprite):
             
             # reset the timer to the current time (or 5 seconds), so the boss doesn't rapid fire within the 5 seconds
             self.shootTimer = current_time
-        if self.game.boss_lives == 0:
-            self.kill()
-            self.game.highscoreCheck()
-            self.game.running = False
-            print("YOU WIN!!!!!!!")
+        # if self.game.boss_lives == 0:
+        #     self.kill()
+        #     self.game.highscoreCheck()
+        #     self.game.running = False
+        #     print("YOU WIN!!!!!!!")
+            
 class BossProjectile(Sprite):
     def __init__(self, game, x, y, angle):
         self.groups = game.all_sprites, game.all_bossprojectiles
